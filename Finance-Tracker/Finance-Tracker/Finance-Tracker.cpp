@@ -1,15 +1,36 @@
 #include <iostream>
+
 int const MAX_COMMAND_LENGTH = 30;
-int const MAX_MONTH = 11;
+int const MAX_MONTH = 12;
 char const TERMINATE_SYMBOL = '\0';
+
 int totalMonths = 0;
 MonthData months[MAX_MONTH];
+
 int myStringCompare(const char* a, const char* b);
 void setupProfile();
+void addData();
+void printBalanceColored(double balance);
 
 struct MonthData {
     double income;
     double expense;
+};
+
+const char* monthNames[13] = {
+    "",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
 };
 
 int main()
@@ -22,8 +43,13 @@ int main()
         {
             setupProfile();
         }
+        else if (strcmp(command, "add") == 0)
+        {
+            addData();
+        }
     }
 }
+
 int myStringCompare(const char* firstString, const char* secondString) 
 {
     int i = 0;
@@ -49,6 +75,7 @@ int myStringCompare(const char* firstString, const char* secondString)
     }
     return 1;
 }
+
 void setupProfile()
 {
     std::cout << "Enter number of months: ";
@@ -71,4 +98,39 @@ void setupProfile()
         months[i].expense = 0;
     }
     std::cout << "Profile created successfully." << std::endl;
+}
+
+void addData() 
+{
+    int enterMonth;
+    std::cin >> enterMonth;
+
+    if (enterMonth < 1 || enterMonth > totalMonths) 
+    {
+        std::cout << "Invalid month!" << std::endl;
+        return;
+    }
+
+    std::cout << "Enter income: ";
+    std::cin >> months[enterMonth].income;
+
+    std::cout << "Enter expense: ";
+    std::cin >> months[enterMonth].expense;
+
+    double balance = months[enterMonth].income - months[enterMonth].expense;
+
+    std::cout << "Result: Balance for " << monthNames[enterMonth] << ": " << balance << std::endl;
+    printBalanceColored(balance);
+}
+
+void printBalanceColored(double balance) 
+{
+    if (balance < 0)
+    {
+        std::cout << "\033[1;31m" << "Negative Balance!" << "\033[0m" << std::endl;
+    }
+    else 
+    {
+        std::cout << "\033[1;32m" << "Positive Balance!" << "\033[0m" << std::endl;
+    }
 }
