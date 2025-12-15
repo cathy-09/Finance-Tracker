@@ -3,6 +3,7 @@
 int const MAX_COMMAND_LENGTH = 30;
 int const MAX_MONTH = 12;
 char const TERMINATE_SYMBOL = '\0';
+int const MAX_MONTH_NAME = 13;
 
 int totalMonths = 0;
 
@@ -19,7 +20,8 @@ struct MonthData
 };
 MonthData months[MAX_MONTH];
 
-const char* monthNames[13] = {
+const char* monthNames[MAX_MONTH_NAME] = 
+{
     "",
     "January",
     "February",
@@ -38,7 +40,8 @@ const char* monthNames[13] = {
 int main()
 {
     char command[MAX_COMMAND_LENGTH];
-    while (true) {
+    while (true) 
+    {
         std::cout << "> ";
         std::cin.getline(command, MAX_COMMAND_LENGTH);
         if (myStringCompare(command, "setup") == 0)
@@ -52,6 +55,17 @@ int main()
         else if (strcmp(command, "report") == 0)
         {
             report();
+        }
+        else if (strcmp(command, "search") == 0) 
+        {
+            char monthText[MAX_MONTH_NAME];
+            std::cin >> monthText;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            //TODO: searchMonth(monthText);
+        }
+        else 
+        {
+            std::cout << "Invalid command." << std::endl;
         }
     }
 }
@@ -103,17 +117,20 @@ void setupProfile()
         months[i].income = 0;
         months[i].expense = 0;
     }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
     std::cout << "Profile created successfully." << std::endl;
 }
 
 void addData() 
 {
-    int enterMonth;
+    int enterMonth = 0; 
+    std::cout << "Month: ";
     std::cin >> enterMonth;
-
     if (enterMonth < 1 || enterMonth > totalMonths) 
     {
         std::cout << "Invalid month!" << std::endl;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         return;
     }
 
@@ -125,19 +142,25 @@ void addData()
 
     double balance = months[enterMonth].income - months[enterMonth].expense;
 
-    std::cout << "Result: Balance for " << monthNames[enterMonth] << ": " << balance << std::endl;
+    std::cout << "Result: Balance for " << monthNames[enterMonth] << ": ";
     printBalanceColored(balance);
+    std::cout << std::endl;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
-void printBalanceColored(double balance) 
+void printBalanceColored(double balance)
 {
-    if (balance < 0)
+    if (balance > 0)
     {
-        std::cout << "\033[1;31m" << "Negative Balance!" << "\033[0m" << std::endl;
+        std::cout << "\033[1;32m+" << balance << "\033[0m";
     }
-    else 
+    else if (balance < 0)
     {
-        std::cout << "\033[1;32m" << "Positive Balance!" << "\033[0m" << std::endl;
+        std::cout << "\033[1;31m" << balance << "\033[0m";
+    }
+    else
+    {
+        std::cout << "\033[1;33m" << balance << "\033[0m";
     }
 }
 void report()
@@ -151,8 +174,8 @@ void report()
         double balance = months[i].income - months[i].expense;
 
         std::cout << monthNames[i] << " | "
-                  << months[i].income << " | "
-                  << months[i].expense << " | ";
+            << months[i].income << " | "
+            << months[i].expense << " | ";
         printBalanceColored(balance);
         std::cout << std::endl;
 
@@ -160,11 +183,11 @@ void report()
         totalExpense = totalExpense + (months[i].expense);
     }
     std::cout << "----------------------------------" << std::endl;
-    double avg = (totalIncome - totalExpense) / totalMonths;
+    double average = (totalIncome - totalExpense) / totalMonths;
 
     std::cout << "Total income: " << totalIncome << std::endl;
     std::cout << "Total expense: " << totalExpense << std::endl;
     std::cout << "Average balance: ";
-    printBalanceColored(avg);
+    printBalanceColored(average);
     std::cout << std::endl;
 }
