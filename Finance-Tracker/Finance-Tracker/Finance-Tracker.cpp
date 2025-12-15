@@ -47,6 +47,10 @@ int main()
         {
             addData();
         }
+        else if (strcmp(command, "report") == 0)
+        {
+            report();
+        }
     }
 }
 
@@ -133,4 +137,32 @@ void printBalanceColored(double balance)
     {
         std::cout << "\033[1;32m" << "Positive Balance!" << "\033[0m" << std::endl;
     }
+}
+void report()
+{
+    double totalIncome = 0;
+    double totalExpense = 0;
+    std::cout << "Month | Income | Expense | Balance" << std::endl;
+    std::cout << "----------------------------------" << std::endl;
+    for (int i = 1; i <= totalMonths; i++) 
+    {
+        double balance = months[i].income - months[i].expense;
+
+        std::cout << monthNames[i] << " | "
+                  << months[i].income << " | "
+                  << months[i].expense << " | ";
+        printBalanceColored(balance);
+        std::cout << std::endl;
+
+        totalIncome = totalIncome+ (months[i].income);
+        totalExpense = totalExpense + (months[i].expense);
+    }
+    std::cout << "----------------------------------" << std::endl;
+    double avg = (totalIncome - totalExpense) / totalMonths;
+
+    std::cout << "Total income: " << totalIncome << std::endl;
+    std::cout << "Total expense: " << totalExpense << std::endl;
+    std::cout << "Average balance: ";
+    printBalanceColored(avg);
+    std::cout << std::endl;
 }
