@@ -5,17 +5,19 @@ int const MAX_MONTH = 12;
 char const TERMINATE_SYMBOL = '\0';
 
 int totalMonths = 0;
-MonthData months[MAX_MONTH];
 
 int myStringCompare(const char* a, const char* b);
 void setupProfile();
 void addData();
 void printBalanceColored(double balance);
+void report();
 
-struct MonthData {
+struct MonthData 
+{
     double income;
     double expense;
 };
+MonthData months[MAX_MONTH];
 
 const char* monthNames[13] = {
     "",
