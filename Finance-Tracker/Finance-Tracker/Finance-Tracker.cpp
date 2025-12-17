@@ -4,6 +4,7 @@ int const MAX_COMMAND_LENGTH = 30;
 int const MAX_MONTH = 12;
 char const TERMINATE_SYMBOL = '\0';
 int const MAX_MONTH_NAME = 13;
+double const PERCENT = 100.0;
 
 int totalMonths = 0;
 
@@ -61,7 +62,7 @@ int main()
             char monthText[MAX_MONTH_NAME];
             std::cin >> monthText;
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            //TODO: searchMonth(monthText);
+            searchMonth(monthText);
         }
         else 
         {
@@ -190,4 +191,40 @@ void report()
     std::cout << "Average balance: ";
     printBalanceColored(average);
     std::cout << std::endl;
+}
+void searchMonth(const char* name)
+{
+	int index = -1;
+    for (int i = 1; i <= MAX_MONTH; i++)
+    {
+        if (myStringCompare(name, monthNames[i]) == 0) 
+        {
+            index = i;
+			break;
+        }
+        if (index == -1 || index > totalMonths)
+        {
+            std::cout << "Month not found." << std::endl;
+            return;
+        }
+        double income = months[index].income;
+        double expense = months[index].expense;
+        double balance = income - expense;
+        std::cout << "Income: " << income << std::endl;
+        std::cout << "Expense: " << expense << std::endl;
+        std::cout << "Balance: ";
+        printBalanceColored(balance);
+        std::cout << std::endl;
+        if (income > 0)
+        {
+            double ratio = (expense * PERCENT) / income;
+            std::cout << "Expense ratio: " << ratio << "%";
+            std::cout << std::endl;
+        }
+        else 
+        {
+            std::cout << "Expense ratio: no income.";
+            std::cout << std::endl;
+        }
+    }
 }
