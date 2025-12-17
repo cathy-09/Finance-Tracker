@@ -1,7 +1,6 @@
 #include <iostream>
 
 int const MAX_COMMAND_LENGTH = 30;
-int const MAX_MONTH = 12;
 char const TERMINATE_SYMBOL = '\0';
 int const MAX_MONTH_NAME = 13;
 double const PERCENT = 100.0;
@@ -13,13 +12,16 @@ void setupProfile();
 void addData();
 void printBalanceColored(double balance);
 void report();
+void searchMonth(const char* name);
+void mySwap(int& firstValue, int& secondValue);
+void sortMonths(const char* type);
 
 struct MonthData 
 {
     double income;
     double expense;
 };
-MonthData months[MAX_MONTH];
+MonthData* months = nullptr;
 
 const char* monthNames[MAX_MONTH_NAME] = 
 {
@@ -64,11 +66,18 @@ int main()
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             searchMonth(monthText);
         }
+        else if (strcmp(command, "sort") == 0) {
+            char type[20];
+            std::cin >> type;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            sortMonths(type);
+        }
         else 
         {
             std::cout << "Invalid command." << std::endl;
         }
     }
+    delete[] months;
 }
 
 int myStringCompare(const char* firstString, const char* secondString) 
@@ -113,6 +122,8 @@ void setupProfile()
         totalMonths = 0;
         return;
     }
+    delete[] months;
+    months = new MonthData[totalMonths + 1];
     for (int i = 1; i <= totalMonths; i++) 
     {
         months[i].income = 0;
@@ -195,7 +206,7 @@ void report()
 void searchMonth(const char* name)
 {
 	int index = -1;
-    for (int i = 1; i <= MAX_MONTH; i++)
+    for (int i = 1; i <= totalMonths; i++)
     {
         if (myStringCompare(name, monthNames[i]) == 0) 
         {
@@ -226,5 +237,77 @@ void searchMonth(const char* name)
             std::cout << "Expense ratio: no income.";
             std::cout << std::endl;
         }
+    }
+}
+void mySwap(int& firstValue, int& secondValue)
+{
+    if (&firstValue == &secondValue)
+    {
+        return;
+    }
+    int tempValue = firstValue;
+    firstValue = secondValue;
+    secondValue = tempValue;
+}
+void sortMonths(const char* type)
+{
+    int* order = new int[totalMonths + 1];
+    for (int i = 1; i <= totalMonths; i++)
+    {
+        order[i] = i;
+    }
+    for (int i = 1; i <= totalMonths; i++)
+    {
+        for (int j = 1; j <= totalMonths - 1; j++)
+        {
+			double firstValue = 0;
+            double secondValue = 0;
+            if (myStringCompare(type, "income") == 0) 
+            {
+                firstValue = months[order[j]].income;
+                secondValue = months[order[j + 1]].income;
+            }
+            else if (myStringCompare(type, "expense") == 0) 
+            {
+                firstValue = months[order[j]].expense;
+                secondValue = months[order[j + 1]].expense;
+            }
+            else if (myStringCompare(type, "balance") == 0) 
+            {
+                firstValue = months[order[j]].income - months[order[j]].expense;
+                secondValue = months[order[j + 1]].income - months[order[j + 1]].expense;
+            }
+            else 
+            {
+                std::cout << "Invalid sort type." << std::endl;
+                delete[] order;
+                return;
+            }
+            if (firstValue < secondValue) 
+            {
+                mySwap(order[j], order[j + 1]);
+			}
+        }
+    }
+    std::cout << "Sorted by monthly " << type << " (descending):" << std::endl;
+    for (int k = 1; k <= 3 && k <= totalMonths; k++)
+    {
+        int monthIndex = order[k];
+        std::cout << k << ". " << monthNames[monthIndex] << ": ";
+        double value = 0;
+        if (myStringCompare(type, "income") == 0)
+        {
+            value = months[monthIndex].income;
+        }
+        else if (myStringCompare(type, "expense") == 0)
+        {
+            value = months[monthIndex].expense;
+        }
+        else
+        {
+			value = months[monthIndex].income - months[monthIndex].expense;
+        }
+        printBalanceColored(value);
+        std::cout << std::endl;
     }
 }
