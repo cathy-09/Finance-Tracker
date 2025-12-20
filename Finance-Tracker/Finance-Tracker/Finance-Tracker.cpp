@@ -58,15 +58,15 @@ int main()
         char* commandWord = getCommandWord(command);
         char* argumentString = getArgumentFromCommand(command);
         
-        if (myStringCompare(command, "setup") == 0)
+        if (myStringCompare(commandWord, "setup") == 0)
         {
             setupProfile();
         }
-        else if (myStringCompare(command, "add") == 0)
+        else if (myStringCompare(commandWord, "add") == 0)
         {
             addData();
         }
-        else if (myStringCompare(command, "report") == 0)
+        else if (myStringCompare(commandWord, "report") == 0)
         {
             report();
         }
@@ -82,22 +82,48 @@ int main()
                 searchMonth(argumentString);
             }
         }
-        else if (myStringCompare(command, "sort") == 0) 
+        else if (myStringCompare(commandWord, "sort") == 0)
         {
-			//TODO: read the commad properly
-            char type[MAX_TYPE_LENGTH];
-            std::cin.getline(type, MAX_TYPE_LENGTH);
-            sortMonths(type);
+            if (argumentString[0] == '\0')
+            {
+                std::cout << "Sort type missing.";
+                newLine();
+            }
+            else
+            {
+                sortMonths(argumentString);
+            }
         }
-        else if (myStringCompare(command, "forecast") == 0) 
+        else if (myStringCompare(commandWord, "forecast") == 0)
         {
-            //TODO: read the commad properly
-            int monthAhead = 0;
-            std::cin >> monthAhead;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            forecast(monthAhead);
+            if (argumentString[0] == '\0')
+            {
+                std::cout << "Months missing.";
+                newLine();
+            }
+            else
+            {
+                int monthAhead = 0;
+                int i = 0;
+
+                while (argumentString[i] != TERMINATE_SYMBOL)
+                {
+                    monthAhead = monthAhead * 10 + (argumentString[i] - '0');
+                    i++;
+                }
+
+                if (monthAhead <= 0)
+                {
+                    std::cout << "Invalid months.";
+                    newLine();
+                }
+                else
+                {
+                    forecast(monthAhead);
+                }
+            }
         }
-        else 
+        else
         {
             std::cout << "Invalid command.";
             newLine();
