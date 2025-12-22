@@ -11,10 +11,15 @@ double const PERCENT = 100.0;
 int totalMonths = 0;
 
 int myStringCompare(const char* a, const char* b);
+bool isValidMonthCount(int months);
+void initializeMonths(struct MonthData* monthsArray, int monthsCount);
 void setupProfile();
 void addData();
 void printBalanceColored(double balance);
 void report();
+void printReportHeader();
+double printMonthReport(int monthIndex);
+void printReportSummary(double totalIncome, double totalExpense);
 void searchMonth(const char* name);
 void mySwap(int& firstValue, int& secondValue);
 void sortMonths(const char* type);
@@ -225,30 +230,47 @@ void setupProfile()
 {
     std::cout << "Enter number of months: ";
     std::cin >> totalMonths;
+
     if (std::cin.fail())
     {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Invalid input. Enter a number: ";
+        std::cout << "Invalid input. Enter a number.";
+        newLine();
+        totalMonths = 0;
+        return;
     }
-    if (totalMonths <= 0 || totalMonths > 13)
+
+    if (!isValidMonthCount(totalMonths))
     {
         std::cout << "Invalid months!";
         newLine();
         totalMonths = 0;
         return;
     }
+
     delete[] months;
     months = new MonthData[totalMonths + 1];
-    for (int i = 1; i <= totalMonths; i++) 
-    {
-        months[i].income = 0;
-        months[i].expense = 0;
-    }
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
+    initializeMonths(months, totalMonths);
+
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::cout << "Profile created successfully.";
-	newLine();
+    newLine();
+}
+
+void initializeMonths(MonthData* monthsArray, int monthsCount)
+{
+    for (int i = 1; i <= monthsCount; i++)
+    {
+        monthsArray[i].income = 0;
+        monthsArray[i].expense = 0;
+    }
+}
+
+bool isValidMonthCount(int months)
+{
+    return months > 0 && months <= 12;
 }
 
 void addData() 
@@ -297,34 +319,53 @@ void report()
 {
     double totalIncome = 0;
     double totalExpense = 0;
+
+    printReportHeader();
+
+    for (int i = 1; i <= totalMonths; i++)
+    {
+        printMonthReport(i);
+        totalIncome += months[i].income;
+        totalExpense += months[i].expense;
+    }
+
+    printReportSummary(totalIncome, totalExpense);
+}
+
+void printReportHeader()
+{
     std::cout << "Month | Income | Expense | Balance";
     newLine();
     std::cout << "----------------------------------";
-	newLine();
-    for (int i = 1; i <= totalMonths; i++) 
-    {
-        double balance = months[i].income - months[i].expense;
+    newLine();
+}
+double printMonthReport(int monthIndex)
+{
+    double balance = months[monthIndex].income - months[monthIndex].expense;
 
-        std::cout << monthNames[i] << " | "
-            << months[i].income << " | "
-            << months[i].expense << " | ";
-        printBalanceColored(balance);
-        newLine();
+    std::cout << monthNames[monthIndex] << " | "
+        << months[monthIndex].income << " | "
+        << months[monthIndex].expense << " | ";
 
-        totalIncome = totalIncome+ (months[i].income);
-        totalExpense = totalExpense + (months[i].expense);
-    }
+    printBalanceColored(balance);
+    newLine();
+
+    return balance;
+}
+void printReportSummary(double totalIncome, double totalExpense)
+{
     std::cout << "----------------------------------";
-	newLine();
+    newLine();
+
     double average = (totalIncome - totalExpense) / totalMonths;
 
     std::cout << "Total income: " << totalIncome;
-	newLine();
+    newLine();
     std::cout << "Total expense: " << totalExpense;
-	newLine();
+    newLine();
     std::cout << "Average balance: ";
     printBalanceColored(average);
-	newLine();
+    newLine();
 }
 void searchMonth(const char* name) 
 {
