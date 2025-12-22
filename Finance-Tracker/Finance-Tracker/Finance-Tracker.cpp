@@ -23,6 +23,8 @@ void newLine();
 void myStringConcat(char* sourceString, char* destinationString);
 char* getArgumentFromCommand(const char* fullCommand);
 char* getCommandWord(const char* fullCommand);
+double myAbs(double value);
+void chart();
 
 struct MonthData 
 {
@@ -123,6 +125,10 @@ int main()
                 }
             }
         }
+        else if (myStringCompare(commandWord, "chart") == 0)
+        {
+            chart();
+        }
         else
         {
             std::cout << "Invalid command.";
@@ -133,6 +139,15 @@ int main()
     }
     delete[] months;
 }
+double myAbs(double value)
+{
+    if (value < 0)
+    {
+        return -value;
+    }
+    return value;
+}
+
 void newLine()
 {
     std::cout << std::endl;
@@ -455,11 +470,70 @@ void forecast(int monthAhead)
 
         while (remainingSavings > 0 && month <= totalMonths * MAX_MONTHS_IN_YEAR)
         {
-            remainingSavings = remainingSavings + averageChange;
+            remainingSavings = remainingSavings + myAbs(averageChange);
             month++;
         }
 
         std::cout << "Expected to run out of money after " << month << " months.";
         newLine();
     }
+}
+void chart()
+{
+    std::cout << "=== YEARLY FINANCIAL CHART ===";
+    newLine();
+
+    double maxValue = 0;
+    for (int i = 1; i <= totalMonths; i++)
+    {
+        double monthTotal = months[i].income + months[i].expense;
+        if (monthTotal > maxValue)
+        {
+            maxValue = monthTotal;
+        }
+    }
+
+    int step = maxValue / 5;
+    if (step < 1)
+    {
+        step = 1;
+    }
+
+    for (int level = maxValue; level >= 0; level -= step)
+    {
+        std::cout << level << " | ";
+
+        for (int m = 1; m <= MAX_MONTHS_IN_YEAR; m++)
+        {
+            double monthTotal = 0;
+            if (m <= totalMonths)
+            {
+                monthTotal = months[m].income + months[m].expense;
+            }
+
+            if (monthTotal >= level)
+            {
+                std::cout << "# ";
+            }
+            else
+            {
+                std::cout << "  ";
+            }
+        }
+        newLine();
+    }
+
+    std::cout << "-------------------------";
+    newLine();
+    std::cout << "    ";
+
+    for (int m = 1; m <= MAX_MONTHS_IN_YEAR; m++)
+    {
+        std::cout
+            << monthNames[m][0]
+            << monthNames[m][1]
+            << monthNames[m][2]
+            << " ";
+    }
+    newLine();
 }
