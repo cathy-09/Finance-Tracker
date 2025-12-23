@@ -21,6 +21,8 @@ void printReportHeader();
 double printMonthReport(int monthIndex);
 void printReportSummary(double totalIncome, double totalExpense);
 void searchMonth(const char* name);
+int findMonthIndex(const char* monthName);
+void printMonthDetails(int monthIndex);
 void mySwap(int& firstValue, int& secondValue);
 void sortMonths(const char* type);
 void forecast(int monthAhead);
@@ -367,43 +369,56 @@ void printReportSummary(double totalIncome, double totalExpense)
     printBalanceColored(average);
     newLine();
 }
-void searchMonth(const char* name) 
+void searchMonth(const char* name)
 {
-    int index = -1;
-    for (int i = 1; i <= totalMonths; i++) 
-    {
-        if (myStringCompare(name, monthNames[i]) == 0) 
-        {
-            index = i;
-            break;
-        }
-    }
-    if (index == -1 || index > totalMonths) 
+    int index = findMonthIndex(name);
+
+    if (index == -1)
     {
         std::cout << "Month not found.";
-		newLine();
+        newLine();
         return;
     }
-    double income = months[index].income;
-    double expense = months[index].expense;
+
+    printMonthDetails(index);
+}
+int findMonthIndex(const char* monthName)
+{
+    for (int i = 1; i <= totalMonths; i++)
+    {
+        if (myStringCompare(monthName, monthNames[i]) == 0)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+void printMonthDetails(int monthIndex)
+{
+    double income = months[monthIndex].income;
+    double expense = months[monthIndex].expense;
     double balance = income - expense;
+
     std::cout << "Income: " << income;
     newLine();
+
     std::cout << "Expense: " << expense;
     newLine();
+
     std::cout << "Balance: ";
     printBalanceColored(balance);
     newLine();
-    if (income > 0) 
+
+    if (income > 0)
     {
         double ratio = (expense * PERCENT) / income;
         std::cout << "Expense ratio: " << ratio << "%";
-		newLine();
+        newLine();
     }
-    else 
+    else
     {
         std::cout << "Expense ratio: no income.";
-		newLine();
+        newLine();
     }
 }
 void mySwap(int& firstValue, int& secondValue)
