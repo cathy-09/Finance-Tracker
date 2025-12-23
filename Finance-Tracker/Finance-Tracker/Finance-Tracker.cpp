@@ -25,6 +25,10 @@ int findMonthIndex(const char* monthName);
 void printMonthDetails(int monthIndex);
 void mySwap(int& firstValue, int& secondValue);
 void sortMonths(const char* type);
+double getMonthValue(int monthIndex, const char* type);
+bool isValidSortType(const char* type);
+void sortOrderByType(int* order, const char* type);
+void printTopMonths(int* order, const char* type);
 void forecast(int monthAhead);
 void newLine();
 void myStringConcat(char* sourceString, char* destinationString);
@@ -433,68 +437,77 @@ void mySwap(int& firstValue, int& secondValue)
 }
 void sortMonths(const char* type)
 {
+    if (!isValidSortType(type))
+    {
+        std::cout << "Invalid sort type.";
+        newLine();
+        return;
+    }
+
     int* order = new int[totalMonths + 1];
     for (int i = 1; i <= totalMonths; i++)
     {
         order[i] = i;
     }
+
+    sortOrderByType(order, type);
+    printTopMonths(order, type);
+
+    delete[] order;
+}
+double getMonthValue(int monthIndex, const char* type)
+{
+    if (myStringCompare(type, "income") == 0)
+    {
+        return months[monthIndex].income;
+    }
+    else if (myStringCompare(type, "expense") == 0)
+    {
+        return months[monthIndex].expense;
+    }
+    else if (myStringCompare(type, "balance") == 0)
+    {
+        return months[monthIndex].income - months[monthIndex].expense;
+    }
+    return 0;
+}
+bool isValidSortType(const char* type)
+{
+    return myStringCompare(type, "income") == 0 ||
+        myStringCompare(type, "expense") == 0 ||
+        myStringCompare(type, "balance") == 0;
+}
+void sortOrderByType(int* order, const char* type)
+{
     for (int i = 1; i <= totalMonths; i++)
     {
-        for (int j = 1; j <= totalMonths - 1; j++)
+        for (int j = 1; j < totalMonths; j++)
         {
-			double firstValue = 0;
-            double secondValue = 0;
-            if (myStringCompare(type, "income") == 0) 
-            {
-                firstValue = months[order[j]].income;
-                secondValue = months[order[j + 1]].income;
-            }
-            else if (myStringCompare(type, "expense") == 0) 
-            {
-                firstValue = months[order[j]].expense;
-                secondValue = months[order[j + 1]].expense;
-            }
-            else if (myStringCompare(type, "balance") == 0) 
-            {
-                firstValue = months[order[j]].income - months[order[j]].expense;
-                secondValue = months[order[j + 1]].income - months[order[j + 1]].expense;
-            }
-            else 
-            {
-                std::cout << "Invalid sort type.";
-				newLine();
-                delete[] order;
-                return;
-            }
-            if (firstValue < secondValue) 
+            double firstValue = getMonthValue(order[j], type);
+            double secondValue = getMonthValue(order[j + 1], type);
+
+            if (firstValue < secondValue)
             {
                 mySwap(order[j], order[j + 1]);
-			}
+            }
         }
     }
+}
+void printTopMonths(int* order, const char* type)
+{
     std::cout << "Sorted by monthly " << type << " (descending):";
-	newLine();
-    for (int k = 1; (k <= MAX_K_LENGTH && k <= totalMonths); k++)
+    newLine();
+
+    for (int k = 1; k <= MAX_K_LENGTH && k <= totalMonths; k++)
     {
         int monthIndex = order[k];
         std::cout << k << ". " << monthNames[monthIndex] << ": ";
-        double value = 0;
-        if (myStringCompare(type, "income") == 0)
-        {
-            value = months[monthIndex].income;
-        }
-        else if (myStringCompare(type, "expense") == 0)
-        {
-            value = months[monthIndex].expense;
-        }
-        else
-        {
-			value = months[monthIndex].income - months[monthIndex].expense;
-        }
-        printBalanceColored(value);
-		newLine();
+        printBalanceColored(getMonthValue(monthIndex, type));
+        newLine();
     }
 }
+
+
 void forecast(int monthAhead)
 {
     double totalIncome = 0;
