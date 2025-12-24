@@ -30,6 +30,9 @@ bool isValidSortType(const char* type);
 void sortOrderByType(int* order, const char* type);
 void printTopMonths(int* order, const char* type);
 void forecast(int monthAhead);
+void calculateSavings(double& savings, double& averageChange);
+void forecastPositive(double savings, double averageChange, int monthsAhead);
+void forecastNegative(double savings, double averageChange);
 void newLine();
 void myStringConcat(char* sourceString, char* destinationString);
 char* getArgumentFromCommand(const char* fullCommand);
@@ -507,46 +510,69 @@ void printTopMonths(int* order, const char* type)
     }
 }
 
-
 void forecast(int monthAhead)
+{
+    double savings = 0;
+    double averageChange = 0;
+
+    calculateSavings(savings, averageChange);
+
+    std::cout << "Current savings: ";
+    printBalanceColored(savings);
+    newLine();
+
+    std::cout << "Average monthly change: ";
+    printBalanceColored(averageChange);
+    newLine();
+
+    if (averageChange >= 0)
+    {
+        forecastPositive(savings, averageChange, monthAhead);
+    }
+    else
+    {
+        forecastNegative(savings, averageChange);
+    }
+}
+void calculateSavings(double& savings, double& averageChange)
 {
     double totalIncome = 0;
     double totalExpense = 0;
-    for (int i = 1; i <= totalMonths; i++) 
+
+    for (int i = 1; i <= totalMonths; i++)
     {
         totalIncome += months[i].income;
         totalExpense += months[i].expense;
     }
-    double savings = totalIncome - totalExpense;
-    double averageChange = savings / totalMonths;
-    std::cout << "Current savings: ";
-    printBalanceColored(savings);
-	newLine();
-    std::cout << "Average monthly change: ";
-    printBalanceColored(averageChange);
-    newLine();
-    if (averageChange >= 0) 
-    {
-        double futureSavings = savings + averageChange * monthAhead;
-        std::cout << "Predicted savings after " << monthAhead << " months: ";
-        printBalanceColored(futureSavings);
-        newLine();
-    }
-    else
-    {
-        double remainingSavings = savings;
-        int month = 0;
 
-        while (remainingSavings > 0 && month <= totalMonths * MAX_MONTHS_IN_YEAR)
-        {
-            remainingSavings = remainingSavings + myAbs(averageChange);
-            month++;
-        }
-
-        std::cout << "Expected to run out of money after " << month << " months.";
-        newLine();
-    }
+    savings = totalIncome - totalExpense;
+    averageChange = savings / totalMonths;
 }
+void forecastPositive(double savings, double averageChange, int monthsAhead)
+{
+    double futureSavings = savings + averageChange * monthsAhead;
+
+    std::cout << "Predicted savings after " << monthsAhead << " months: ";
+    printBalanceColored(futureSavings);
+    newLine();
+}
+
+void forecastNegative(double savings, double averageChange)
+{
+    double remainingSavings = savings;
+    int month = 0;
+
+    while (remainingSavings > 0 &&
+        month <= totalMonths * MAX_MONTHS_IN_YEAR)
+    {
+        remainingSavings += averageChange;
+        month++;
+    }
+
+    std::cout << "Expected to run out of money after " << month << " months.";
+    newLine();
+}
+
 void chart()
 {
     std::cout << "=== YEARLY FINANCIAL CHART ===";
