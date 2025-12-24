@@ -39,6 +39,10 @@ char* getArgumentFromCommand(const char* fullCommand);
 char* getCommandWord(const char* fullCommand);
 double myAbs(double value);
 void chart();
+double getMaxMonthTotal();
+int calculateChartStep(double maxValue);
+void drawChartBody(double maxValue, int step);
+void printChartMonths();
 
 struct MonthData 
 {
@@ -578,7 +582,20 @@ void chart()
     std::cout << "=== YEARLY FINANCIAL CHART ===";
     newLine();
 
+    double maxValue = getMaxMonthTotal();
+    int step = calculateChartStep(maxValue);
+
+    drawChartBody(maxValue, step);
+
+    std::cout << "-------------------------";
+    newLine();
+
+    printChartMonths();
+}
+double getMaxMonthTotal()
+{
     double maxValue = 0;
+
     for (int i = 1; i <= totalMonths; i++)
     {
         double monthTotal = months[i].income + months[i].expense;
@@ -588,12 +605,19 @@ void chart()
         }
     }
 
+    return maxValue;
+}
+int calculateChartStep(double maxValue)
+{
     int step = maxValue / 5;
     if (step < 1)
     {
         step = 1;
     }
-
+    return step;
+}
+void drawChartBody(double maxValue, int step)
+{
     for (int level = maxValue; level >= 0; level -= step)
     {
         std::cout << level << " | ";
@@ -601,6 +625,7 @@ void chart()
         for (int m = 1; m <= MAX_MONTHS_IN_YEAR; m++)
         {
             double monthTotal = 0;
+
             if (m <= totalMonths)
             {
                 monthTotal = months[m].income + months[m].expense;
@@ -617,9 +642,9 @@ void chart()
         }
         newLine();
     }
-
-    std::cout << "-------------------------";
-    newLine();
+}
+void printChartMonths()
+{
     std::cout << "    ";
 
     for (int m = 1; m <= MAX_MONTHS_IN_YEAR; m++)
