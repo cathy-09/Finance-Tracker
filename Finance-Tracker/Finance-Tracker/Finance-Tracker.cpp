@@ -10,7 +10,6 @@ double const PERCENT = 100.0;
 
 int totalMonths = 0;
 
-int myStringCompare(const char* a, const char* b);
 bool isValidMonthCount(int months);
 void initializeMonths(struct MonthData* monthsArray, int monthsCount);
 void setupProfile();
@@ -19,7 +18,6 @@ bool isValidMonthIndex(int month);
 void inputMonthData(int month);
 double calculateMonthBalance(int month);
 void printMonthResult(int month, double balance);
-void printBalanceColored(double balance);
 void report();
 void printReportHeader();
 double printMonthReport(int monthIndex);
@@ -37,16 +35,20 @@ void forecast(int monthAhead);
 void calculateSavings(double& savings, double& averageChange);
 void forecastPositive(double savings, double averageChange, int monthsAhead);
 void forecastNegative(double savings, double averageChange);
-void newLine();
-void myStringConcat(char* sourceString, char* destinationString);
-char* getArgumentFromCommand(const char* fullCommand);
-char* getCommandWord(const char* fullCommand);
-double myAbs(double value);
 void chart();
 double getMaxMonthTotal();
 int calculateChartStep(double maxValue);
 void drawChartBody(double maxValue, int step);
 void printChartMonths();
+
+/* Utility functions */
+int myStringCompare(const char* a, const char* b);
+void myStringConcat(char* sourceString, char* destinationString);
+char* getArgumentFromCommand(const char* fullCommand);
+char* getCommandWord(const char* fullCommand);
+double myAbs(double value);
+void newLine();
+void printBalanceColored(double balance);
 
 struct MonthData 
 {
@@ -161,87 +163,6 @@ int main()
     }
     delete[] months;
 }
-double myAbs(double value)
-{
-    if (value < 0)
-    {
-        return -value;
-    }
-    return value;
-}
-
-void newLine()
-{
-    std::cout << std::endl;
-}
-void myStringConcat(char* sourceString, char* destinationString)
-{
-    while (*destinationString != '\0')
-    {
-        destinationString++;
-    }
-    while (*sourceString != '\0')
-    {
-        *destinationString = *sourceString;
-        sourceString++;
-        destinationString++;
-    }
-    *destinationString = '\0';
-}
-char* getArgumentFromCommand(const char* fullCommand)
-{
-    char* argumentString = new char[MAX_COMMAND_LENGTH];
-    argumentString[0] = TERMINATE_SYMBOL;
-    int i = 0;
-    while (fullCommand[i] != TERMINATE_SYMBOL && fullCommand[i] != ' ')
-    {
-        i++;
-    }
-    while (fullCommand[i] == ' ')
-    {
-        i++;
-    }
-    myStringConcat((char*)(fullCommand + i), argumentString);
-    return argumentString;
-}
-char* getCommandWord(const char* fullCommand)
-{
-    char* commandWord = new char[MAX_COMMAND_LENGTH];
-    int i = 0;
-    while (fullCommand[i] != TERMINATE_SYMBOL && fullCommand[i] != ' ')
-    {
-        commandWord[i] = fullCommand[i];
-        i++;
-    }
-    commandWord[i] = TERMINATE_SYMBOL;
-    return commandWord;
-}
-
-int myStringCompare(const char* firstString, const char* secondString) 
-{
-    int i = 0;
-    while (firstString[i] != TERMINATE_SYMBOL && secondString[i] != TERMINATE_SYMBOL)
-    {
-        if (firstString[i] < secondString[i])
-        {
-            return -1;
-        }
-        if (firstString[i] > secondString[i]) 
-        {
-            return 1;
-        }
-        i++;
-    }
-    if (firstString[i] == TERMINATE_SYMBOL && secondString[i] == TERMINATE_SYMBOL) 
-    {
-        return 0;
-    }
-    if (firstString[i] == TERMINATE_SYMBOL)
-    {
-        return -1;
-    }
-    return 1;
-}
 
 void setupProfile()
 {
@@ -338,22 +259,6 @@ void printMonthResult(int month, double balance)
     newLine();
 }
 
-
-void printBalanceColored(double balance)
-{
-    if (balance > 0)
-    {
-        std::cout << "\033[1;32m+" << balance << "\033[0m";
-    }
-    else if (balance < 0)
-    {
-        std::cout << "\033[1;31m" << balance << "\033[0m";
-    }
-    else
-    {
-        std::cout << "\033[1;33m" << balance << "\033[0m";
-    }
-}
 void report()
 {
     double totalIncome = 0;
