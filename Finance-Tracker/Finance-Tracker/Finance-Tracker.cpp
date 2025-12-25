@@ -15,6 +15,10 @@ bool isValidMonthCount(int months);
 void initializeMonths(struct MonthData* monthsArray, int monthsCount);
 void setupProfile();
 void addData();
+bool isValidMonthIndex(int month);
+void inputMonthData(int month);
+double calculateMonthBalance(int month);
+void printMonthResult(int month, double balance);
 void printBalanceColored(double balance);
 void report();
 void printReportHeader();
@@ -286,12 +290,19 @@ bool isValidMonthCount(int months)
     return months > 0 && months <= 12;
 }
 
-void addData() 
+bool isValidMonthIndex(int month)
 {
-    int enterMonth = 0; 
+    return month >= 1 && month <= totalMonths;
+}
+
+void addData()
+{
+    int month = 0;
+
     std::cout << "Month: ";
-    std::cin >> enterMonth;
-    if (enterMonth < 1 || enterMonth > totalMonths) 
+    std::cin >> month;
+
+    if (!isValidMonthIndex(month))
     {
         std::cout << "Invalid month!";
         newLine();
@@ -299,19 +310,34 @@ void addData()
         return;
     }
 
-    std::cout << "Enter income: ";
-    std::cin >> months[enterMonth].income;
+    inputMonthData(month);
 
-    std::cout << "Enter expense: ";
-    std::cin >> months[enterMonth].expense;
+    double balance = calculateMonthBalance(month);
+    printMonthResult(month, balance);
 
-    double balance = months[enterMonth].income - months[enterMonth].expense;
-
-    std::cout << "Result: Balance for " << monthNames[enterMonth] << ": ";
-    printBalanceColored(balance);
-    newLine();
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
+
+
+void inputMonthData(int month)
+{
+    std::cout << "Enter income: ";
+    std::cin >> months[month].income;
+
+    std::cout << "Enter expense: ";
+    std::cin >> months[month].expense;
+}
+double calculateMonthBalance(int month)
+{
+    return months[month].income - months[month].expense;
+}
+void printMonthResult(int month, double balance)
+{
+    std::cout << "Result: Balance for " << monthNames[month] << ": ";
+    printBalanceColored(balance);
+    newLine();
+}
+
 
 void printBalanceColored(double balance)
 {
