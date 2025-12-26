@@ -153,6 +153,13 @@ int main()
         {
             chart();
         }
+        else if (myStringCompare(commandWord, "exit") == 0)
+        {
+            report();
+            delete[] commandWord;
+            delete[] argumentString;
+            break;
+        }
         else
         {
             std::cout << "Invalid command.";
