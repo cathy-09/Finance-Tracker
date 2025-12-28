@@ -15,31 +15,49 @@ const int TOTAL_WIDTH = COL_MONTH + COL_INCOME + COL_EXPENSE + COL_BALANCE + 3 *
 
 int totalMonths = 0;
 
+/* setupProfile functionally */
+void setupProfile();
 bool isValidMonthCount(int months);
 void initializeMonths(struct MonthData* monthsArray, int monthsCount);
-void setupProfile();
+
+/* addData functionally */
 void addData();
 bool isValidMonthIndex(int month);
 void inputMonthData(int month);
 double calculateMonthBalance(int month);
 void printMonthResult(int month, double balance);
+
+/* Align */
+void printTextAligned(const char* text, int width);
+void printDoubleAligned(double value, int width);
+void printBalanceAligned(double balance, int width);
+void printDoubleFixed(double value);
+
+/* report functionally */
 void report();
 void printReportHeader();
 double printMonthReport(int monthIndex);
 void printReportSummary(double totalIncome, double totalExpense);
+
+/* searchMonth functionally */
 void searchMonth(const char* name);
 int findMonthIndex(const char* monthName);
 void printMonthDetails(int monthIndex);
-void mySwap(int& firstValue, int& secondValue);
+
+/* sortMonths functionally */
 void sortMonths(const char* type);
-double getMonthValue(int monthIndex, const char* type);
 bool isValidSortType(const char* type);
 void sortOrderByType(int* order, const char* type);
 void printTopMonths(int* order, const char* type);
+double getMonthValue(int monthIndex, const char* type);
+
+/* forecast functionally */
 void forecast(int monthAhead);
 void calculateSavings(double& savings, double& averageChange);
 void forecastPositive(double savings, double averageChange, int monthsAhead);
 void forecastNegative(double savings, double averageChange);
+
+/* chart functionally */
 void chart();
 double getMaxMonthTotal();
 int calculateChartStep(double maxValue);
@@ -49,18 +67,13 @@ void printChartMonths();
 /* Utility functions */
 int myStringCompare(const char* a, const char* b);
 void myStringConcat(char* sourceString, char* destinationString);
+int myStringLength(const char* text);
+double myAbs(double value);
+void mySwap(int& firstValue, int& secondValue);
 char* getArgumentFromCommand(const char* fullCommand);
 char* getCommandWord(const char* fullCommand);
-double myAbs(double value);
 void newLine();
 void printBalanceColored(double balance);
-
-/* Align */
-int myStringLength(const char* text);
-void printTextAligned(const char* text, int width);
-void printDoubleAligned(double value, int width);
-void printBalanceAligned(double balance, int width);
-void printDoubleFixed(double value);
 
 struct MonthData
 {
@@ -230,11 +243,6 @@ bool isValidMonthCount(int months)
 	return months > 0 && months <= 12;
 }
 
-bool isValidMonthIndex(int month)
-{
-	return month >= 1 && month <= totalMonths;
-}
-
 void addData()
 {
 	int month = 0;
@@ -258,6 +266,10 @@ void addData()
 	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
+bool isValidMonthIndex(int month)
+{
+	return month >= 1 && month <= totalMonths;
+}
 
 void inputMonthData(int month)
 {
@@ -540,22 +552,6 @@ void sortMonths(const char* type)
 
 	delete[] order;
 }
-double getMonthValue(int monthIndex, const char* type)
-{
-	if (myStringCompare(type, "income") == 0)
-	{
-		return months[monthIndex].income;
-	}
-	else if (myStringCompare(type, "expense") == 0)
-	{
-		return months[monthIndex].expense;
-	}
-	else if (myStringCompare(type, "balance") == 0)
-	{
-		return months[monthIndex].income - months[monthIndex].expense;
-	}
-	return 0;
-}
 bool isValidSortType(const char* type)
 {
 	return myStringCompare(type, "income") == 0 ||
@@ -590,6 +586,22 @@ void printTopMonths(int* order, const char* type)
 		printBalanceColored(getMonthValue(monthIndex, type));
 		newLine();
 	}
+}
+double getMonthValue(int monthIndex, const char* type)
+{
+	if (myStringCompare(type, "income") == 0)
+	{
+		return months[monthIndex].income;
+	}
+	else if (myStringCompare(type, "expense") == 0)
+	{
+		return months[monthIndex].expense;
+	}
+	else if (myStringCompare(type, "balance") == 0)
+	{
+		return months[monthIndex].income - months[monthIndex].expense;
+	}
+	return 0;
 }
 
 void forecast(int monthAhead)
