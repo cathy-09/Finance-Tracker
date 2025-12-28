@@ -7,6 +7,11 @@ char const TERMINATE_SYMBOL = '\0';
 int const MAX_MONTH_NAME = 13;
 int const MAX_MONTHS_IN_YEAR = 12;
 double const PERCENT = 100.0;
+const int COL_MONTH = 10;
+const int COL_INCOME = 12;
+const int COL_EXPENSE = 12;
+const int COL_BALANCE = 12;
+const int TOTAL_WIDTH = COL_MONTH + COL_INCOME + COL_EXPENSE + COL_BALANCE + 3 * 3 + 1;
 
 int totalMonths = 0;
 
@@ -50,658 +55,787 @@ double myAbs(double value);
 void newLine();
 void printBalanceColored(double balance);
 
-struct MonthData 
+/* Align */
+int myStringLength(const char* text);
+void printTextAligned(const char* text, int width);
+void printDoubleAligned(double value, int width);
+void printBalanceAligned(double balance, int width);
+void printDoubleFixed(double value);
+
+struct MonthData
 {
-    double income;
-    double expense;
+	double income;
+	double expense;
 };
 MonthData* months = nullptr;
 
-const char* monthNames[MAX_MONTH_NAME] = 
+const char* monthNames[MAX_MONTH_NAME] =
 {
-    "",
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
+	"",
+	"January",
+	"February",
+	"March",
+	"April",
+	"May",
+	"June",
+	"July",
+	"August",
+	"September",
+	"October",
+	"November",
+	"December"
 };
 
 int main()
 {
-    char command[MAX_COMMAND_LENGTH];
-    while (true) 
-    {
-        std::cout << "> ";
-        std::cin.getline(command, MAX_COMMAND_LENGTH);
-        char* commandWord = getCommandWord(command);
-        char* argumentString = getArgumentFromCommand(command);
-        
-        if (myStringCompare(commandWord, "setup") == 0)
-        {
-            setupProfile();
-        }
-        else if (myStringCompare(commandWord, "add") == 0)
-        {
-            addData();
-        }
-        else if (myStringCompare(commandWord, "report") == 0)
-        {
-            report();
-        }
-        else if (myStringCompare(commandWord, "search") == 0)
-        {
-            if (argumentString[0] == '\0')
-            {
-                std::cout << "Month name missing.";
-                newLine();
-            }
-            else
-            {
-                searchMonth(argumentString);
-            }
-        }
-        else if (myStringCompare(commandWord, "sort") == 0)
-        {
-            if (argumentString[0] == '\0')
-            {
-                std::cout << "Sort type missing.";
-                newLine();
-            }
-            else
-            {
-                sortMonths(argumentString);
-            }
-        }
-        else if (myStringCompare(commandWord, "forecast") == 0)
-        {
-            if (argumentString[0] == '\0')
-            {
-                std::cout << "Months missing.";
-                newLine();
-            }
-            else
-            {
-                int monthAhead = 0;
-                int i = 0;
+	char command[MAX_COMMAND_LENGTH];
+	while (true)
+	{
+		std::cout << "> ";
+		std::cin.getline(command, MAX_COMMAND_LENGTH);
+		char* commandWord = getCommandWord(command);
+		char* argumentString = getArgumentFromCommand(command);
 
-                while (argumentString[i] != TERMINATE_SYMBOL)
-                {
-                    monthAhead = monthAhead * 10 + (argumentString[i] - '0');
-                    i++;
-                }
+		if (myStringCompare(commandWord, "setup") == 0)
+		{
+			setupProfile();
+		}
+		else if (myStringCompare(commandWord, "add") == 0)
+		{
+			addData();
+		}
+		else if (myStringCompare(commandWord, "report") == 0)
+		{
+			report();
+		}
+		else if (myStringCompare(commandWord, "search") == 0)
+		{
+			if (argumentString[0] == '\0')
+			{
+				std::cout << "Month name missing.";
+				newLine();
+			}
+			else
+			{
+				searchMonth(argumentString);
+			}
+		}
+		else if (myStringCompare(commandWord, "sort") == 0)
+		{
+			if (argumentString[0] == '\0')
+			{
+				std::cout << "Sort type missing.";
+				newLine();
+			}
+			else
+			{
+				sortMonths(argumentString);
+			}
+		}
+		else if (myStringCompare(commandWord, "forecast") == 0)
+		{
+			if (argumentString[0] == '\0')
+			{
+				std::cout << "Months missing.";
+				newLine();
+			}
+			else
+			{
+				int monthAhead = 0;
+				int i = 0;
 
-                if (monthAhead <= 0)
-                {
-                    std::cout << "Invalid months.";
-                    newLine();
-                }
-                else
-                {
-                    forecast(monthAhead);
-                }
-            }
-        }
-        else if (myStringCompare(commandWord, "chart") == 0)
-        {
-            chart();
-        }
-        else if (myStringCompare(commandWord, "exit") == 0)
-        {
-            report();
-            delete[] commandWord;
-            delete[] argumentString;
-            break;
-        }
-        else
-        {
-            std::cout << "Invalid command.";
-            newLine();
-        }
+				while (argumentString[i] != TERMINATE_SYMBOL)
+				{
+					monthAhead = monthAhead * 10 + (argumentString[i] - '0');
+					i++;
+				}
+
+				if (monthAhead <= 0)
+				{
+					std::cout << "Invalid months.";
+					newLine();
+				}
+				else
+				{
+					forecast(monthAhead);
+				}
+			}
+		}
+		else if (myStringCompare(commandWord, "chart") == 0)
+		{
+			chart();
+		}
+		else if (myStringCompare(commandWord, "exit") == 0)
+		{
+			report();
+			delete[] commandWord;
+			delete[] argumentString;
+			break;
+		}
+		else
+		{
+			std::cout << "Invalid command.";
+			newLine();
+		}
 		delete[] commandWord;
-        delete[] argumentString;
-    }
-    delete[] months;
+		delete[] argumentString;
+	}
+	delete[] months;
 }
 
 void setupProfile()
 {
-    std::cout << "Enter number of months: ";
-    std::cin >> totalMonths;
+	std::cout << "Enter number of months: ";
+	std::cin >> totalMonths;
 
-    if (std::cin.fail())
-    {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Invalid input. Enter a number.";
-        newLine();
-        totalMonths = 0;
-        return;
-    }
+	if (std::cin.fail())
+	{
+		std::cin.clear();
+		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		std::cout << "Invalid input. Enter a number.";
+		newLine();
+		totalMonths = 0;
+		return;
+	}
 
-    if (!isValidMonthCount(totalMonths))
-    {
-        std::cout << "Invalid months!";
-        newLine();
-        totalMonths = 0;
-        return;
-    }
+	if (!isValidMonthCount(totalMonths))
+	{
+		std::cout << "Invalid months!";
+		newLine();
+		totalMonths = 0;
+		return;
+	}
 
-    delete[] months;
-    months = new MonthData[totalMonths + 1];
+	delete[] months;
+	months = new MonthData[totalMonths + 1];
 
-    initializeMonths(months, totalMonths);
+	initializeMonths(months, totalMonths);
 
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    std::cout << "Profile created successfully.";
-    newLine();
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	std::cout << "Profile created successfully.";
+	newLine();
 }
 
 void initializeMonths(MonthData* monthsArray, int monthsCount)
 {
-    for (int i = 1; i <= monthsCount; i++)
-    {
-        monthsArray[i].income = 0;
-        monthsArray[i].expense = 0;
-    }
+	for (int i = 1; i <= monthsCount; i++)
+	{
+		monthsArray[i].income = 0;
+		monthsArray[i].expense = 0;
+	}
 }
 
 bool isValidMonthCount(int months)
 {
-    return months > 0 && months <= 12;
+	return months > 0 && months <= 12;
 }
 
 bool isValidMonthIndex(int month)
 {
-    return month >= 1 && month <= totalMonths;
+	return month >= 1 && month <= totalMonths;
 }
 
 void addData()
 {
-    int month = 0;
+	int month = 0;
 
-    std::cout << "Month: ";
-    std::cin >> month;
+	std::cout << "Month: ";
+	std::cin >> month;
 
-    if (!isValidMonthIndex(month))
-    {
-        std::cout << "Invalid month!";
-        newLine();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        return;
-    }
+	if (!isValidMonthIndex(month))
+	{
+		std::cout << "Invalid month!";
+		newLine();
+		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		return;
+	}
 
-    inputMonthData(month);
+	inputMonthData(month);
 
-    double balance = calculateMonthBalance(month);
-    printMonthResult(month, balance);
+	double balance = calculateMonthBalance(month);
+	printMonthResult(month, balance);
 
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
 
 void inputMonthData(int month)
 {
-    std::cout << "Enter income: ";
-    std::cin >> months[month].income;
+	std::cout << "Enter income: ";
+	std::cin >> months[month].income;
 
-    std::cout << "Enter expense: ";
-    std::cin >> months[month].expense;
+	std::cout << "Enter expense: ";
+	std::cin >> months[month].expense;
 }
 double calculateMonthBalance(int month)
 {
-    return months[month].income - months[month].expense;
+	return months[month].income - months[month].expense;
 }
 void printMonthResult(int month, double balance)
 {
-    std::cout << "Result: Balance for " << monthNames[month] << ": ";
-    printBalanceColored(balance);
-    newLine();
+	std::cout << "Result: Balance for " << monthNames[month] << ": ";
+	printBalanceColored(balance);
+	newLine();
 }
 
 void report()
 {
-    double totalIncome = 0;
-    double totalExpense = 0;
+	double totalIncome = 0;
+	double totalExpense = 0;
 
-    printReportHeader();
+	printReportHeader();
 
-    for (int i = 1; i <= totalMonths; i++)
-    {
-        printMonthReport(i);
-        totalIncome += months[i].income;
-        totalExpense += months[i].expense;
-    }
+	for (int i = 1; i <= totalMonths; i++)
+	{
+		printMonthReport(i);
+		totalIncome += months[i].income;
+		totalExpense += months[i].expense;
+	}
 
-    printReportSummary(totalIncome, totalExpense);
+	printReportSummary(totalIncome, totalExpense);
 }
 
 int myStringLength(const char* text)
 {
-    int lengh = 0;
-    while (text[lengh] != TERMINATE_SYMBOL)
-    {
-        lengh++;
-    }
-    return lengh;
+	int length = 0;
+	while (text[length] != TERMINATE_SYMBOL)
+	{
+		length++;
+	}
+	return length;
+}
+
+void printTextAligned(const char* text, int width)
+{
+	int length = myStringLength(text);
+	std::cout << text;
+
+	for (int i = 0; i < width - length; i++)
+	{
+		std::cout << ' ';
+	}
+}
+void printDoubleFixed(double value)
+{
+	long long intPart = (long long)value;
+	int fracPart = (int)((value - intPart) * 100);
+
+	myAbs(fracPart);
+
+	std::cout << intPart << ".";
+
+	if (fracPart < 10)
+	{
+		std::cout << "0";
+	}
+
+	std::cout << fracPart;
+}
+
+
+void printDoubleAligned(double value, int width)
+{
+	long long intPart = (long long)value;
+	int fracPart = (int)((value - intPart) * 100);
+	myAbs(fracPart);
+	int length = 0;
+	long long temp = intPart;
+	do
+	{
+		length++;
+		temp /= 10;
+	} 
+	while (temp != 0);
+	length += 3;
+
+	for (int i = 0; i < width - length; i++)
+	{
+		std::cout << ' ';
+	}
+	std::cout << intPart << ".";
+	if (fracPart < 10)
+	{
+		std::cout << "0";
+	}
+	std::cout << fracPart;
+}
+
+void printBalanceAligned(double balance, int width)
+{
+	long long intPart = (long long)balance;
+	int fracPart = (int)((balance - intPart) * 100);
+	myAbs(fracPart);
+
+	int length = 0;
+	long long temp = intPart;
+	if (intPart == 0)
+	{
+		length = 1;
+	}
+	else 
+	{
+		while (temp != 0)
+		{
+			length++;
+			temp /= 10;
+		}
+	}
+	length += 3;
+	if (balance >= 0)
+	{
+		length++;
+	}
+
+	int spaces = width - length;
+	if (balance > 0)
+	{
+		spaces++;
+	}
+
+	for (int i = 0; i < spaces; i++)
+	{
+		std::cout << ' ';
+	}
+
+	printBalanceColored(balance);
+}
+
+void printHorizontalLine()
+{
+	for (int i = 0; i < TOTAL_WIDTH; i++)
+	{
+		std::cout << "-";
+	}
+	newLine();
 }
 
 void printReportHeader()
 {
-    std::cout << "Month | Income | Expense | Balance";
-    newLine();
-    std::cout << "----------------------------------";
-    newLine();
+	printTextAligned("Month", COL_MONTH);
+	std::cout << " | ";
+	printTextAligned("Income", COL_INCOME);
+	std::cout << " | ";
+	printTextAligned("Expense", COL_EXPENSE);
+	std::cout << " | ";
+	printTextAligned("Balance", COL_BALANCE);
+	newLine();
+
+	printHorizontalLine();
 }
+
 double printMonthReport(int monthIndex)
 {
-    double balance = months[monthIndex].income - months[monthIndex].expense;
+	double balance = months[monthIndex].income - months[monthIndex].expense;
 
-    std::cout << monthNames[monthIndex] << " | "
-        << months[monthIndex].income << " | "
-        << months[monthIndex].expense << " | ";
+	printTextAligned(monthNames[monthIndex], COL_MONTH);
+	std::cout << " | ";
+	printDoubleAligned(months[monthIndex].income, COL_INCOME);
+	std::cout << " | ";
+	printDoubleAligned(months[monthIndex].expense, COL_EXPENSE);
+	std::cout << " | ";
+	printBalanceAligned(balance, COL_BALANCE);
 
-    printBalanceColored(balance);
-    newLine();
-
-    return balance;
+	newLine();
+	return balance;
 }
+
 void printReportSummary(double totalIncome, double totalExpense)
 {
-    std::cout << "----------------------------------";
-    newLine();
+	printHorizontalLine();
 
-    double average = (totalIncome - totalExpense) / totalMonths;
+	double average = (totalIncome - totalExpense) / totalMonths;
 
-    std::cout << "Total income: " << totalIncome;
-    newLine();
-    std::cout << "Total expense: " << totalExpense;
-    newLine();
-    std::cout << "Average balance: ";
-    printBalanceColored(average);
-    newLine();
+	std::cout << "Total income: ";
+	printDoubleFixed(totalIncome);
+	newLine();
+
+	std::cout << "Total expense: ";
+	printDoubleFixed(totalExpense);
+	newLine();
+
+	std::cout << "Average balance: ";
+	printBalanceColored(average);
+	newLine();
 }
+
 void searchMonth(const char* name)
 {
-    int index = findMonthIndex(name);
+	int index = findMonthIndex(name);
 
-    if (index == -1)
-    {
-        std::cout << "Month not found.";
-        newLine();
-        return;
-    }
+	if (index == -1)
+	{
+		std::cout << "Month not found.";
+		newLine();
+		return;
+	}
 
-    printMonthDetails(index);
+	printMonthDetails(index);
 }
 int findMonthIndex(const char* monthName)
 {
-    for (int i = 1; i <= totalMonths; i++)
-    {
-        if (myStringCompare(monthName, monthNames[i]) == 0)
-        {
-            return i;
-        }
-    }
-    return -1;
+	for (int i = 1; i <= totalMonths; i++)
+	{
+		if (myStringCompare(monthName, monthNames[i]) == 0)
+		{
+			return i;
+		}
+	}
+	return -1;
 }
 void printMonthDetails(int monthIndex)
 {
-    double income = months[monthIndex].income;
-    double expense = months[monthIndex].expense;
-    double balance = income - expense;
+	double income = months[monthIndex].income;
+	double expense = months[monthIndex].expense;
+	double balance = income - expense;
 
-    std::cout << "Income: " << income;
-    newLine();
+	std::cout << "Income: " << income;
+	newLine();
 
-    std::cout << "Expense: " << expense;
-    newLine();
+	std::cout << "Expense: " << expense;
+	newLine();
 
-    std::cout << "Balance: ";
-    printBalanceColored(balance);
-    newLine();
+	std::cout << "Balance: ";
+	printBalanceColored(balance);
+	newLine();
 
-    if (income > 0)
-    {
-        double ratio = (expense * PERCENT) / income;
-        std::cout << "Expense ratio: " << ratio << "%";
-        newLine();
-    }
-    else
-    {
-        std::cout << "Expense ratio: no income.";
-        newLine();
-    }
+	if (income > 0)
+	{
+		double ratio = (expense * PERCENT) / income;
+		std::cout << "Expense ratio: " << ratio << "%";
+		newLine();
+	}
+	else
+	{
+		std::cout << "Expense ratio: no income.";
+		newLine();
+	}
 }
 void mySwap(int& firstValue, int& secondValue)
 {
-    if (&firstValue == &secondValue)
-    {
-        return;
-    }
-    int tempValue = firstValue;
-    firstValue = secondValue;
-    secondValue = tempValue;
+	if (&firstValue == &secondValue)
+	{
+		return;
+	}
+	int tempValue = firstValue;
+	firstValue = secondValue;
+	secondValue = tempValue;
 }
 void sortMonths(const char* type)
 {
-    if (!isValidSortType(type))
-    {
-        std::cout << "Invalid sort type.";
-        newLine();
-        return;
-    }
+	if (!isValidSortType(type))
+	{
+		std::cout << "Invalid sort type.";
+		newLine();
+		return;
+	}
 
-    int* order = new int[totalMonths + 1];
-    for (int i = 1; i <= totalMonths; i++)
-    {
-        order[i] = i;
-    }
+	int* order = new int[totalMonths + 1];
+	for (int i = 1; i <= totalMonths; i++)
+	{
+		order[i] = i;
+	}
 
-    sortOrderByType(order, type);
-    printTopMonths(order, type);
+	sortOrderByType(order, type);
+	printTopMonths(order, type);
 
-    delete[] order;
+	delete[] order;
 }
 double getMonthValue(int monthIndex, const char* type)
 {
-    if (myStringCompare(type, "income") == 0)
-    {
-        return months[monthIndex].income;
-    }
-    else if (myStringCompare(type, "expense") == 0)
-    {
-        return months[monthIndex].expense;
-    }
-    else if (myStringCompare(type, "balance") == 0)
-    {
-        return months[monthIndex].income - months[monthIndex].expense;
-    }
-    return 0;
+	if (myStringCompare(type, "income") == 0)
+	{
+		return months[monthIndex].income;
+	}
+	else if (myStringCompare(type, "expense") == 0)
+	{
+		return months[monthIndex].expense;
+	}
+	else if (myStringCompare(type, "balance") == 0)
+	{
+		return months[monthIndex].income - months[monthIndex].expense;
+	}
+	return 0;
 }
 bool isValidSortType(const char* type)
 {
-    return myStringCompare(type, "income") == 0 ||
-        myStringCompare(type, "expense") == 0 ||
-        myStringCompare(type, "balance") == 0;
+	return myStringCompare(type, "income") == 0 ||
+		myStringCompare(type, "expense") == 0 ||
+		myStringCompare(type, "balance") == 0;
 }
 void sortOrderByType(int* order, const char* type)
 {
-    for (int i = 1; i <= totalMonths; i++)
-    {
-        for (int j = 1; j < totalMonths; j++)
-        {
-            double firstValue = getMonthValue(order[j], type);
-            double secondValue = getMonthValue(order[j + 1], type);
+	for (int i = 1; i <= totalMonths; i++)
+	{
+		for (int j = 1; j < totalMonths; j++)
+		{
+			double firstValue = getMonthValue(order[j], type);
+			double secondValue = getMonthValue(order[j + 1], type);
 
-            if (firstValue < secondValue)
-            {
-                mySwap(order[j], order[j + 1]);
-            }
-        }
-    }
+			if (firstValue < secondValue)
+			{
+				mySwap(order[j], order[j + 1]);
+			}
+		}
+	}
 }
 void printTopMonths(int* order, const char* type)
 {
-    std::cout << "Sorted by monthly " << type << " (descending):";
-    newLine();
+	std::cout << "Sorted by monthly " << type << " (descending):";
+	newLine();
 
-    for (int k = 1; k <= MAX_K_LENGTH && k <= totalMonths; k++)
-    {
-        int monthIndex = order[k];
-        std::cout << k << ". " << monthNames[monthIndex] << ": ";
-        printBalanceColored(getMonthValue(monthIndex, type));
-        newLine();
-    }
+	for (int k = 1; k <= MAX_K_LENGTH && k <= totalMonths; k++)
+	{
+		int monthIndex = order[k];
+		std::cout << k << ". " << monthNames[monthIndex] << ": ";
+		printBalanceColored(getMonthValue(monthIndex, type));
+		newLine();
+	}
 }
 
 void forecast(int monthAhead)
 {
-    double savings = 0;
-    double averageChange = 0;
+	double savings = 0;
+	double averageChange = 0;
 
-    calculateSavings(savings, averageChange);
+	calculateSavings(savings, averageChange);
 
-    std::cout << "Current savings: ";
-    printBalanceColored(savings);
-    newLine();
+	std::cout << "Current savings: ";
+	printBalanceColored(savings);
+	newLine();
 
-    std::cout << "Average monthly change: ";
-    printBalanceColored(averageChange);
-    newLine();
+	std::cout << "Average monthly change: ";
+	printBalanceColored(averageChange);
+	newLine();
 
-    if (averageChange >= 0)
-    {
-        forecastPositive(savings, averageChange, monthAhead);
-    }
-    else
-    {
-        forecastNegative(savings, averageChange);
-    }
+	if (averageChange >= 0)
+	{
+		forecastPositive(savings, averageChange, monthAhead);
+	}
+	else
+	{
+		forecastNegative(savings, averageChange);
+	}
 }
 void calculateSavings(double& savings, double& averageChange)
 {
-    double totalIncome = 0;
-    double totalExpense = 0;
+	double totalIncome = 0;
+	double totalExpense = 0;
 
-    for (int i = 1; i <= totalMonths; i++)
-    {
-        totalIncome += months[i].income;
-        totalExpense += months[i].expense;
-    }
+	for (int i = 1; i <= totalMonths; i++)
+	{
+		totalIncome += months[i].income;
+		totalExpense += months[i].expense;
+	}
 
-    savings = totalIncome - totalExpense;
-    averageChange = savings / totalMonths;
+	savings = totalIncome - totalExpense;
+	averageChange = savings / totalMonths;
 }
 void forecastPositive(double savings, double averageChange, int monthsAhead)
 {
-    double futureSavings = savings + averageChange * monthsAhead;
+	double futureSavings = savings + averageChange * monthsAhead;
 
-    std::cout << "Predicted savings after " << monthsAhead << " months: ";
-    printBalanceColored(futureSavings);
-    newLine();
+	std::cout << "Predicted savings after " << monthsAhead << " months: ";
+	printBalanceColored(futureSavings);
+	newLine();
 }
 
 void forecastNegative(double savings, double averageChange)
 {
-    double remainingSavings = savings;
-    int month = 0;
+	double remainingSavings = savings;
+	int month = 0;
 
-    while (remainingSavings > 0 &&
-        month <= totalMonths * MAX_MONTHS_IN_YEAR)
-    {
-        remainingSavings += averageChange;
-        month++;
-    }
+	while (remainingSavings > 0 &&
+		month <= totalMonths * MAX_MONTHS_IN_YEAR)
+	{
+		remainingSavings += averageChange;
+		month++;
+	}
 
-    std::cout << "Expected to run out of money after " << month << " months.";
-    newLine();
+	std::cout << "Expected to run out of money after " << month << " months.";
+	newLine();
 }
 
 void chart()
 {
-    std::cout << "=== YEARLY FINANCIAL CHART ===";
-    newLine();
+	std::cout << "=== YEARLY FINANCIAL CHART ===";
+	newLine();
 
-    double maxValue = getMaxMonthTotal();
-    int step = calculateChartStep(maxValue);
+	double maxValue = getMaxMonthTotal();
+	int step = calculateChartStep(maxValue);
 
-    drawChartBody(maxValue, step);
+	drawChartBody(maxValue, step);
 
-    std::cout << "-------------------------";
-    newLine();
+	std::cout << "-------------------------";
+	newLine();
 
-    printChartMonths();
+	printChartMonths();
 }
 double getMaxMonthTotal()
 {
-    double maxValue = 0;
+	double maxValue = 0;
 
-    for (int i = 1; i <= totalMonths; i++)
-    {
-        double monthTotal = months[i].income + months[i].expense;
-        if (monthTotal > maxValue)
-        {
-            maxValue = monthTotal;
-        }
-    }
+	for (int i = 1; i <= totalMonths; i++)
+	{
+		double monthTotal = months[i].income + months[i].expense;
+		if (monthTotal > maxValue)
+		{
+			maxValue = monthTotal;
+		}
+	}
 
-    return maxValue;
+	return maxValue;
 }
 int calculateChartStep(double maxValue)
 {
-    int step = maxValue / 5;
-    if (step < 1)
-    {
-        step = 1;
-    }
-    return step;
+	int step = maxValue / 5;
+	if (step < 1)
+	{
+		step = 1;
+	}
+	return step;
 }
 void drawChartBody(double maxValue, int step)
 {
-    for (int level = maxValue; level >= 0; level -= step)
-    {
-        std::cout << level << " | ";
+	for (int level = maxValue; level >= 0; level -= step)
+	{
+		std::cout << level << " | ";
 
-        for (int m = 1; m <= MAX_MONTHS_IN_YEAR; m++)
-        {
-            double monthTotal = 0;
+		for (int m = 1; m <= MAX_MONTHS_IN_YEAR; m++)
+		{
+			double monthTotal = 0;
 
-            if (m <= totalMonths)
-            {
-                monthTotal = months[m].income + months[m].expense;
-            }
+			if (m <= totalMonths)
+			{
+				monthTotal = months[m].income + months[m].expense;
+			}
 
-            if (monthTotal >= level)
-            {
-                std::cout << "# ";
-            }
-            else
-            {
-                std::cout << "  ";
-            }
-        }
-        newLine();
-    }
+			if (monthTotal >= level)
+			{
+				std::cout << "# ";
+			}
+			else
+			{
+				std::cout << "  ";
+			}
+		}
+		newLine();
+	}
 }
 void printChartMonths()
 {
-    std::cout << "    ";
+	std::cout << "    ";
 
-    for (int m = 1; m <= MAX_MONTHS_IN_YEAR; m++)
-    {
-        std::cout
-            << monthNames[m][0]
-            << monthNames[m][1]
-            << monthNames[m][2]
-            << " ";
-    }
-    newLine();
+	for (int m = 1; m <= MAX_MONTHS_IN_YEAR; m++)
+	{
+		std::cout
+			<< monthNames[m][0]
+			<< monthNames[m][1]
+			<< monthNames[m][2]
+			<< " ";
+	}
+	newLine();
 }
 int myStringCompare(const char* firstString, const char* secondString)
 {
-    int i = 0;
-    while (firstString[i] != TERMINATE_SYMBOL && secondString[i] != TERMINATE_SYMBOL)
-    {
-        if (firstString[i] < secondString[i])
-        {
-            return -1;
-        }
-        if (firstString[i] > secondString[i])
-        {
-            return 1;
-        }
-        i++;
-    }
-    if (firstString[i] == TERMINATE_SYMBOL && secondString[i] == TERMINATE_SYMBOL)
-    {
-        return 0;
-    }
-    if (firstString[i] == TERMINATE_SYMBOL)
-    {
-        return -1;
-    }
-    return 1;
+	int i = 0;
+	while (firstString[i] != TERMINATE_SYMBOL && secondString[i] != TERMINATE_SYMBOL)
+	{
+		if (firstString[i] < secondString[i])
+		{
+			return -1;
+		}
+		if (firstString[i] > secondString[i])
+		{
+			return 1;
+		}
+		i++;
+	}
+	if (firstString[i] == TERMINATE_SYMBOL && secondString[i] == TERMINATE_SYMBOL)
+	{
+		return 0;
+	}
+	if (firstString[i] == TERMINATE_SYMBOL)
+	{
+		return -1;
+	}
+	return 1;
 }
 
 double myAbs(double value)
 {
-    if (value < 0)
-    {
-        return -value;
-    }
-    return value;
+	if (value < 0)
+	{
+		return -value;
+	}
+	return value;
 }
 
 void newLine()
 {
-    std::cout << std::endl;
+	std::cout << std::endl;
 }
 
 void myStringConcat(char* sourceString, char* destinationString)
 {
-    while (*destinationString != '\0')
-    {
-        destinationString++;
-    }
-    while (*sourceString != '\0')
-    {
-        *destinationString = *sourceString;
-        sourceString++;
-        destinationString++;
-    }
-    *destinationString = '\0';
+	while (*destinationString != '\0')
+	{
+		destinationString++;
+	}
+	while (*sourceString != '\0')
+	{
+		*destinationString = *sourceString;
+		sourceString++;
+		destinationString++;
+	}
+	*destinationString = '\0';
 }
 
 char* getArgumentFromCommand(const char* fullCommand)
 {
-    char* argumentString = new char[30];
-    argumentString[0] = TERMINATE_SYMBOL;
-    int i = 0;
-    while (fullCommand[i] != TERMINATE_SYMBOL && fullCommand[i] != ' ')
-    {
-        i++;
-    }
-    while (fullCommand[i] == ' ')
-    {
-        i++;
-    }
-    myStringConcat((char*)(fullCommand + i), argumentString);
-    return argumentString;
+	char* argumentString = new char[30];
+	argumentString[0] = TERMINATE_SYMBOL;
+	int i = 0;
+	while (fullCommand[i] != TERMINATE_SYMBOL && fullCommand[i] != ' ')
+	{
+		i++;
+	}
+	while (fullCommand[i] == ' ')
+	{
+		i++;
+	}
+	myStringConcat((char*)(fullCommand + i), argumentString);
+	return argumentString;
 }
 
 char* getCommandWord(const char* fullCommand)
 {
-    char* commandWord = new char[30];
-    int i = 0;
-    while (fullCommand[i] != TERMINATE_SYMBOL && fullCommand[i] != ' ')
-    {
-        commandWord[i] = fullCommand[i];
-        i++;
-    }
-    commandWord[i] = TERMINATE_SYMBOL;
-    return commandWord;
+	char* commandWord = new char[30];
+	int i = 0;
+	while (fullCommand[i] != TERMINATE_SYMBOL && fullCommand[i] != ' ')
+	{
+		commandWord[i] = fullCommand[i];
+		i++;
+	}
+	commandWord[i] = TERMINATE_SYMBOL;
+	return commandWord;
 }
 
 void printBalanceColored(double balance)
 {
-    if (balance > 0)
-    {
-        std::cout << "\033[1;32m+" << balance << "\033[0m";
-    }
-    else if (balance < 0)
-    {
-        std::cout << "\033[1;31m" << balance << "\033[0m";
-    }
-    else
-    {
-        std::cout << "\033[1;33m" << balance << "\033[0m";
-    }
+	if (balance > 0)
+	{
+		std::cout << "\033[1;32m+";
+	}
+	else if (balance < 0)
+	{
+		std::cout << "\033[1;31m";
+	}
+	else
+	{
+		std::cout << "\033[1;33m";
+	}
+
+	printDoubleFixed(balance);
+
+	std::cout << "\033[0m";
 }
