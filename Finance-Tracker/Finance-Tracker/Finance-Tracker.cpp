@@ -15,6 +15,13 @@ const int TOTAL_WIDTH = COL_MONTH + COL_INCOME + COL_EXPENSE + COL_BALANCE + 3 *
 
 int totalMonths = 0;
 
+/* main */
+void processCommand(char* commandWord, char* argumentString, bool& shouldExit);
+void handleForecastCommand(const char* argumentString);
+void handleSearchCommand(const char* argumentString);
+void handleSortCommand(const char* argumentString);
+int parseMonthsAhead(const char* argumentString);
+
 /* setupProfile functionally */
 void setupProfile();
 bool isValidMonthCount(int months);
@@ -101,98 +108,127 @@ const char* monthNames[MAX_MONTH_NAME] =
 int main()
 {
 	char command[MAX_COMMAND_LENGTH];
-	while (true)
+	bool exitProgram = false;
+
+	while (!exitProgram)
 	{
 		std::cout << "> ";
 		std::cin.getline(command, MAX_COMMAND_LENGTH);
+
 		char* commandWord = getCommandWord(command);
 		char* argumentString = getArgumentFromCommand(command);
 
-		if (myStringCompare(commandWord, "setup") == 0)
-		{
-			setupProfile();
-		}
-		else if (myStringCompare(commandWord, "add") == 0)
-		{
-			addData();
-		}
-		else if (myStringCompare(commandWord, "report") == 0)
-		{
-			report();
-		}
-		else if (myStringCompare(commandWord, "search") == 0)
-		{
-			if (argumentString[0] == '\0')
-			{
-				std::cout << "Month name missing.";
-				newLine();
-			}
-			else
-			{
-				searchMonth(argumentString);
-			}
-		}
-		else if (myStringCompare(commandWord, "sort") == 0)
-		{
-			if (argumentString[0] == '\0')
-			{
-				std::cout << "Sort type missing.";
-				newLine();
-			}
-			else
-			{
-				sortMonths(argumentString);
-			}
-		}
-		else if (myStringCompare(commandWord, "forecast") == 0)
-		{
-			if (argumentString[0] == '\0')
-			{
-				std::cout << "Months missing.";
-				newLine();
-			}
-			else
-			{
-				int monthAhead = 0;
-				int i = 0;
+		processCommand(commandWord, argumentString, exitProgram);
 
-				while (argumentString[i] != TERMINATE_SYMBOL)
-				{
-					monthAhead = monthAhead * 10 + (argumentString[i] - '0');
-					i++;
-				}
-
-				if (monthAhead <= 0)
-				{
-					std::cout << "Invalid months.";
-					newLine();
-				}
-				else
-				{
-					forecast(monthAhead);
-				}
-			}
-		}
-		else if (myStringCompare(commandWord, "chart") == 0)
-		{
-			chart();
-		}
-		else if (myStringCompare(commandWord, "exit") == 0)
-		{
-			report();
-			delete[] commandWord;
-			delete[] argumentString;
-			break;
-		}
-		else
-		{
-			std::cout << "Invalid command.";
-			newLine();
-		}
 		delete[] commandWord;
 		delete[] argumentString;
 	}
+
 	delete[] months;
+}
+
+void processCommand(char* commandWord, char* argumentString, bool& shouldExit)
+{
+	if (myStringCompare(commandWord, "setup") == 0)
+	{
+		setupProfile();
+	}
+	else if (myStringCompare(commandWord, "add") == 0)
+	{
+		addData();
+	}
+	else if (myStringCompare(commandWord, "report") == 0)
+	{
+		report();
+	}
+	else if (myStringCompare(commandWord, "search") == 0)
+	{
+		handleSearchCommand(argumentString);
+	}
+	else if (myStringCompare(commandWord, "sort") == 0)
+	{
+		handleSortCommand(argumentString);
+	}
+	else if (myStringCompare(commandWord, "forecast") == 0)
+	{
+		handleForecastCommand(argumentString);
+	}
+	else if (myStringCompare(commandWord, "chart") == 0)
+	{
+		chart();
+	}
+	else if (myStringCompare(commandWord, "exit") == 0)
+	{
+		report();
+		shouldExit = true;
+	}
+	else
+	{
+		std::cout << "Invalid command.";
+		newLine();
+	}
+}
+
+int parseMonthsAhead(const char* argumentString)
+{
+	int monthAhead = 0;
+	int i = 0;
+
+	while (argumentString[i] != TERMINATE_SYMBOL)
+	{
+		monthAhead = monthAhead * 10 + (argumentString[i] - '0');
+		i++;
+	}
+
+	return monthAhead;
+}
+
+void handleForecastCommand(const char* argumentString)
+{
+	if (argumentString[0] == '\0')
+	{
+		std::cout << "Months missing.";
+		newLine();
+	}
+	else
+	{
+		int monthAhead = parseMonthsAhead(argumentString);
+
+		if (monthAhead <= 0)
+		{
+			std::cout << "Invalid months.";
+			newLine();
+		}
+		else
+		{
+			forecast(monthAhead);
+		}
+	}
+}
+void handleSearchCommand(const char* argumentString)
+{
+	if (argumentString[0] == '\0')
+	{
+		std::cout << "Month name missing.";
+		newLine();
+	}
+	else
+	{
+		searchMonth(argumentString);
+	}
+}
+
+void handleSortCommand(const char* argumentString)
+{
+	if (argumentString[0] == '\0')
+	{
+		std::cout << "Sort type missing.";
+		newLine();
+	}
+	else
+	{
+		sortMonths(argumentString);
+	}
 }
 
 void setupProfile()
