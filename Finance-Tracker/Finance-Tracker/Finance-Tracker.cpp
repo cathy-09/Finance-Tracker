@@ -2,6 +2,7 @@
 
 int const MAX_COMMAND_LENGTH = 30;
 int const MAX_K_LENGTH = 3;
+int const POINT_AND_TWO_SYMBOLS = 3;
 int const MAX_TYPE_LENGTH = 20;
 char const TERMINATE_SYMBOL = '\0';
 int const MAX_MONTH_NAME = 13;
@@ -39,6 +40,10 @@ void printTextAligned(const char* text, int width);
 void printDoubleAligned(double value, int width);
 void printBalanceAligned(double balance, int width);
 void printDoubleFixed(double value);
+int countDigits(long long value);
+void printFraction(int fracPart);
+void splitDouble(double value, long long& intPart, int& fracPart);
+
 
 /* report functionally */
 void report();
@@ -127,7 +132,7 @@ int main()
 	delete[] months;
 }
 
-void processCommand(char* commandWord, char* argumentString, bool& shouldExit)
+void processCommand(char* commandWord, char* argumentString, bool& exitProgram)
 {
 	if (myStringCompare(commandWord, "setup") == 0)
 	{
@@ -160,7 +165,7 @@ void processCommand(char* commandWord, char* argumentString, bool& shouldExit)
 	else if (myStringCompare(commandWord, "exit") == 0)
 	{
 		report();
-		shouldExit = true;
+		exitProgram = true;
 	}
 	else
 	{
@@ -185,7 +190,7 @@ int parseMonthsAhead(const char* argumentString)
 
 void handleForecastCommand(const char* argumentString)
 {
-	if (argumentString[0] == '\0')
+	if (argumentString[0] == TERMINATE_SYMBOL)
 	{
 		std::cout << "Months missing.";
 		newLine();
@@ -207,7 +212,7 @@ void handleForecastCommand(const char* argumentString)
 }
 void handleSearchCommand(const char* argumentString)
 {
-	if (argumentString[0] == '\0')
+	if (argumentString[0] == TERMINATE_SYMBOL)
 	{
 		std::cout << "Month name missing.";
 		newLine();
@@ -220,7 +225,7 @@ void handleSearchCommand(const char* argumentString)
 
 void handleSortCommand(const char* argumentString)
 {
-	if (argumentString[0] == '\0')
+	if (argumentString[0] == TERMINATE_SYMBOL)
 	{
 		std::cout << "Sort type missing.";
 		newLine();
@@ -342,14 +347,48 @@ void report()
 	printReportSummary(totalIncome, totalExpense);
 }
 
-int myStringLength(const char* text)
+int countDigits(long long value)
 {
-	int length = 0;
-	while (text[length] != TERMINATE_SYMBOL)
+	if (value == 0)
 	{
-		length++;
+		return 1;
 	}
-	return length;
+
+	int count = 0;
+	long long temp = value;
+
+	if (temp < 0)
+	{
+		temp = -temp;
+	}
+
+	while (temp != 0)
+	{
+		count++;
+		temp /= 10;
+	}
+
+	return count;
+}
+
+void splitDouble(double value, long long& intPart, int& fracPart)
+{
+	intPart = (long long)value;
+	fracPart = (int)((value - intPart) * 100);
+
+	if (fracPart < 0)
+	{
+		fracPart = -fracPart;
+	}
+}
+
+void printFraction(int fracPart)
+{
+	if (fracPart < 10)
+	{
+		std::cout << "0";
+	}
+	std::cout << fracPart;
 }
 
 void printTextAligned(const char* text, int width)
@@ -362,74 +401,48 @@ void printTextAligned(const char* text, int width)
 		std::cout << ' ';
 	}
 }
+
 void printDoubleFixed(double value)
 {
-	long long intPart = (long long)value;
-	int fracPart = (int)((value - intPart) * 100);
+	long long intPart;
+	int fracPart;
 
-	myAbs(fracPart);
+	splitDouble(value, intPart, fracPart);
 
 	std::cout << intPart << ".";
-
-	if (fracPart < 10)
-	{
-		std::cout << "0";
-	}
-
-	std::cout << fracPart;
+	printFraction(fracPart);
 }
 
 void printDoubleAligned(double value, int width)
 {
-	long long intPart = (long long)value;
-	int fracPart = (int)((value - intPart) * 100);
-	myAbs(fracPart);
-	int length = 0;
-	long long temp = intPart;
-	do
-	{
-		length++;
-		temp /= 10;
-	} 
-	while (temp != 0);
-	length += 3;
+	long long intPart;
+	int fracPart;
+
+	splitDouble(value, intPart, fracPart);
+
+	int length = countDigits(intPart) + POINT_AND_TWO_SYMBOLS;
 
 	for (int i = 0; i < width - length; i++)
 	{
 		std::cout << ' ';
 	}
+
 	std::cout << intPart << ".";
-	if (fracPart < 10)
-	{
-		std::cout << "0";
-	}
-	std::cout << fracPart;
+	printFraction(fracPart);
 }
 
 void printBalanceAligned(double balance, int width)
 {
-	long long intPart = (long long)balance;
-	int fracPart = (int)((balance - intPart) * 100);
-	myAbs(fracPart);
+	long long intPart;
+	int fracPart;
 
-	int length = 0;
-	long long temp = intPart;
-	if (intPart == 0)
-	{
-		length = 1;
-	}
-	else 
-	{
-		while (temp != 0)
-		{
-			length++;
-			temp /= 10;
-		}
-	}
-	length += 3;
+	splitDouble(balance, intPart, fracPart);
+
+	int length = countDigits(intPart) + POINT_AND_TWO_SYMBOLS;
+
 	if (balance >= 0)
 	{
-		length++;
+		length++; 
 	}
 
 	int spaces = width - length;
@@ -867,6 +880,16 @@ double myAbs(double value)
 void newLine()
 {
 	std::cout << std::endl;
+}
+
+int myStringLength(const char* text)
+{
+	int length = 0;
+	while (text[length] != TERMINATE_SYMBOL)
+	{
+		length++;
+	}
+	return length;
 }
 
 void myStringConcat(char* sourceString, char* destinationString)
