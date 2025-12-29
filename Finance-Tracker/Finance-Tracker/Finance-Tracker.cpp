@@ -59,9 +59,8 @@ void forecastNegative(double savings, double averageChange);
 
 /* chart functionally */
 void chart();
-double getMaxMonthTotal();
 int calculateChartStep(double maxValue);
-void drawChartBody(double maxValue, int step);
+void drawChartBody(double minBalance, double maxBalance, int step);
 void printChartMonths();
 
 /* Utility functions */
@@ -344,7 +343,6 @@ void printDoubleFixed(double value)
 	std::cout << fracPart;
 }
 
-
 void printDoubleAligned(double value, int width)
 {
 	long long intPart = (long long)value;
@@ -583,7 +581,20 @@ void printTopMonths(int* order, const char* type)
 	{
 		int monthIndex = order[k];
 		std::cout << k << ". " << monthNames[monthIndex] << ": ";
-		printBalanceColored(getMonthValue(monthIndex, type));
+
+		double value = getMonthValue(monthIndex, type);
+
+		if (myStringCompare(type, "expense") == 0)
+		{
+			std::cout << "\033[1;31m";
+			printDoubleFixed(value);
+			std::cout << "\033[0m";
+		}
+		else
+		{
+			printBalanceColored(value);
+		}
+
 		newLine();
 	}
 }
@@ -672,78 +683,113 @@ void chart()
 	std::cout << "=== YEARLY FINANCIAL CHART ===";
 	newLine();
 
-	double maxValue = getMaxMonthTotal();
-	int step = calculateChartStep(maxValue);
+	double minBalance = months[1].income - months[1].expense;
+	double maxBalance = minBalance;
 
-	drawChartBody(maxValue, step);
-
-	std::cout << "-------------------------";
-	newLine();
-
-	printChartMonths();
-}
-double getMaxMonthTotal()
-{
-	double maxValue = 0;
-
-	for (int i = 1; i <= totalMonths; i++)
+	for (int i = 2; i <= totalMonths; i++)
 	{
-		double monthTotal = months[i].income + months[i].expense;
-		if (monthTotal > maxValue)
+		double balance = months[i].income - months[i].expense;
+		if (balance < minBalance)
 		{
-			maxValue = monthTotal;
+			minBalance = balance;
+		}
+		if (balance > maxBalance)
+		{
+			maxBalance = balance;
 		}
 	}
 
-	return maxValue;
+	double range = maxBalance - minBalance;
+	int step = calculateChartStep(range);
+
+	drawChartBody(minBalance, maxBalance, step);
+	printChartMonths();
 }
+
 int calculateChartStep(double maxValue)
 {
-	int step = maxValue / 5;
-	if (step < 1)
+	if (maxValue <= 0)
+	{
+		return 100;
+	}
+
+	int step = (int)(maxValue / 5.0);
+
+	if (step == 0)
 	{
 		step = 1;
 	}
+
 	return step;
 }
-void drawChartBody(double maxValue, int step)
+
+void drawChartBody(double minBalance, double maxBalance, int step)
 {
-	for (int level = maxValue; level >= 0; level -= step)
+	for (int level = 5; level >= 1; level--)
 	{
-		std::cout << level << " | ";
+		double value = minBalance + (level * step);
+		int printValue = (int)value;
+		int numDigits = 0;
+		int temp = printValue;
 
-		for (int m = 1; m <= MAX_MONTHS_IN_YEAR; m++)
+		if (temp == 0)
 		{
-			double monthTotal = 0;
-
-			if (m <= totalMonths)
+			numDigits = 1;
+		}
+		else if (temp < 0)
+		{
+			numDigits = 1;
+			temp = -temp;
+			while (temp > 0)
 			{
-				monthTotal = months[m].income + months[m].expense;
+				numDigits++;
+				temp /= 10;
 			}
-
-			if (monthTotal >= level)
+		}
+		else
+		{
+			while (temp > 0)
 			{
-				std::cout << "# ";
+				numDigits++;
+				temp /= 10;
+			}
+		}
+		for (int i = numDigits; i < 5; i++)
+		{
+			std::cout << " ";
+		}
+		std::cout << printValue << " | ";
+		for (int m = 1; m <= totalMonths; m++)
+		{
+			double balance = months[m].income - months[m].expense;
+			if (balance >= value)
+			{
+				std::cout << "#";
 			}
 			else
 			{
-				std::cout << "  ";
+				std::cout << " ";
 			}
+			std::cout << "   ";
 		}
 		newLine();
 	}
+
+	std::cout << "      ";
+	for (int i = 0; i < totalMonths * 4; i++)
+	{
+		std::cout << "-";
+	}
+	newLine();
 }
+
 void printChartMonths()
 {
-	std::cout << "    ";
+	std::cout << "      ";
 
-	for (int m = 1; m <= MAX_MONTHS_IN_YEAR; m++)
+	for (int m = 1; m <= totalMonths; m++)
 	{
-		std::cout
-			<< monthNames[m][0]
-			<< monthNames[m][1]
-			<< monthNames[m][2]
-			<< " ";
+		std::cout << monthNames[m][0] << monthNames[m][1] << monthNames[m][2] << " ";
 	}
 	newLine();
 }
