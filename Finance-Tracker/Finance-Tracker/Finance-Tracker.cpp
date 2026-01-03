@@ -1,5 +1,20 @@
 #include <iostream>
 
+/**
+*
+* Solution to course project #3
+* Introduction to programming course
+* Faculty of Mathematics and Informatics of Sofia University
+* Winter semester 2025/2026
+*
+* @author Katerina Dimitrova
+* @idnumber 8MI0600563
+* @compiler GCC
+*
+* File with main program
+*
+*/
+
 int const MAX_COMMAND_LENGTH = 30;
 int const MAX_K_LENGTH = 3;
 int const POINT_AND_TWO_SYMBOLS = 3;
