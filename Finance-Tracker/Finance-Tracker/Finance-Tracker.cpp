@@ -59,7 +59,6 @@ int countDigits(long long value);
 void printFraction(int fracPart);
 void splitDouble(double value, long long& intPart, int& fracPart);
 
-
 /* report functionally */
 void report();
 void printReportHeader();
@@ -298,6 +297,19 @@ bool isValidMonthCount(int months)
 	return months > 0 && months <= 12;
 }
 
+int countEnteredMonths()
+{
+	int count = 0;
+	for (int i = 1; i <= totalMonths; i++)
+	{
+		if (months[i].income != 0 || months[i].expense != 0)
+		{
+			count++;
+		}
+	}
+	return count;
+}
+
 void addData()
 {
 	int month = 0;
@@ -517,7 +529,13 @@ void printReportSummary(double totalIncome, double totalExpense)
 {
 	printHorizontalLine();
 
-	double average = (totalIncome - totalExpense) / totalMonths;
+	int enteredMonths = countEnteredMonths();
+
+	double average = 0;
+	if (enteredMonths > 0)
+	{
+		average = (totalIncome - totalExpense) / enteredMonths;
+	}
 
 	std::cout << "Total income: ";
 	printDoubleFixed(totalIncome);
@@ -715,7 +733,17 @@ void calculateSavings(double& savings, double& averageChange)
 	}
 
 	savings = totalIncome - totalExpense;
-	averageChange = savings / totalMonths;
+
+	int enteredMonths = countEnteredMonths();
+
+	if (enteredMonths > 0)
+	{
+		averageChange = savings / enteredMonths;
+	}
+	else
+	{
+		averageChange = 0;
+	}
 }
 void forecastPositive(double savings, double averageChange, int monthsAhead)
 {
