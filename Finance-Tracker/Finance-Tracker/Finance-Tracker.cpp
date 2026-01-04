@@ -49,6 +49,7 @@ bool isValidMonthIndex(int month);
 void inputMonthData(int month);
 double calculateMonthBalance(int month);
 void printMonthResult(int month, double balance);
+int countEnteredMonths();
 
 /* Align */
 void printTextAligned(const char* text, int width);
@@ -88,6 +89,7 @@ void chart();
 int calculateChartStep(double maxValue);
 void drawChartBody(double minBalance, double maxBalance, int step);
 void printChartMonths();
+void printChartHeader();
 
 /* Utility functions */
 int myStringCompare(const char* a, const char* b);
@@ -99,6 +101,8 @@ char* getArgumentFromCommand(const char* fullCommand);
 char* getCommandWord(const char* fullCommand);
 void newLine();
 void printBalanceColored(double balance);
+bool ensureProfile(const char* message);
+double myRound(double value, int precision);
 
 struct MonthData
 {
@@ -151,8 +155,34 @@ void processCommand(char* commandWord, char* argumentString, bool& exitProgram)
 	if (myStringCompare(commandWord, "setup") == 0)
 	{
 		setupProfile();
+		return;
 	}
-	else if (myStringCompare(commandWord, "add") == 0)
+	if (myStringCompare(commandWord, "exit") == 0)
+	{
+		if (months != nullptr)
+		{
+			report();
+		}
+		exitProgram = true;
+		return;
+	}
+
+	bool needsProfile =
+		myStringCompare(commandWord, "add") == 0 ||
+		myStringCompare(commandWord, "report") == 0 ||
+		myStringCompare(commandWord, "search") == 0 ||
+		myStringCompare(commandWord, "sort") == 0 ||
+		myStringCompare(commandWord, "forecast") == 0 ||
+		myStringCompare(commandWord, "chart") == 0;
+
+	if (needsProfile && months == nullptr)
+	{
+		std::cout << "Profile not set. Do setup first.";
+		newLine();
+		return;
+	}
+
+	if (myStringCompare(commandWord, "add") == 0)
 	{
 		addData();
 	}
@@ -312,9 +342,14 @@ int countEnteredMonths()
 
 void addData()
 {
+	if (!ensureProfile("Profile not set."))
+	{
+		return;
+	}
+
 	int month = 0;
 
-	std::cout << "Month: ";
+	std::cout << "Enter month (1-" << totalMonths << "): ";
 	std::cin >> month;
 
 	if (!isValidMonthIndex(month))
@@ -359,6 +394,11 @@ void printMonthResult(int month, double balance)
 
 void report()
 {
+	if (!ensureProfile("No profile to report."))
+	{
+		return;
+	}
+
 	double totalIncome = 0;
 	double totalExpense = 0;
 
@@ -366,9 +406,12 @@ void report()
 
 	for (int i = 1; i <= totalMonths; i++)
 	{
-		printMonthReport(i);
-		totalIncome += months[i].income;
-		totalExpense += months[i].expense;
+		if (months[i].income != 0 || months[i].expense != 0)
+		{
+			printMonthReport(i);
+			totalIncome += months[i].income;
+			totalExpense += months[i].expense;
+		}
 	}
 
 	printReportSummary(totalIncome, totalExpense);
@@ -401,7 +444,7 @@ int countDigits(long long value)
 void splitDouble(double value, long long& intPart, int& fracPart)
 {
 	intPart = (long long)value;
-	fracPart = (int)((value - intPart) * 100);
+	fracPart = (int)((value - intPart) * 100 + 0.5);
 
 	if (fracPart < 0)
 	{
@@ -535,6 +578,7 @@ void printReportSummary(double totalIncome, double totalExpense)
 	if (enteredMonths > 0)
 	{
 		average = (totalIncome - totalExpense) / enteredMonths;
+		average = myRound(average, 2);
 	}
 
 	std::cout << "Total income: ";
@@ -552,6 +596,18 @@ void printReportSummary(double totalIncome, double totalExpense)
 
 void searchMonth(const char* name)
 {
+	if (!ensureProfile("Profile not set."))
+	{
+		return;
+	}
+
+	if (name[0] == TERMINATE_SYMBOL)
+	{
+		std::cout << "Month name missing.";
+		newLine();
+		return;
+	}
+
 	int index = findMonthIndex(name);
 
 	if (index == -1)
@@ -593,6 +649,7 @@ void printMonthDetails(int monthIndex)
 	if (income > 0)
 	{
 		double ratio = (expense * PERCENT) / income;
+		ratio = myRound(ratio, 1);
 		std::cout << "Expense ratio: " << ratio << "%";
 		newLine();
 	}
@@ -699,6 +756,11 @@ double getMonthValue(int monthIndex, const char* type)
 
 void forecast(int monthAhead)
 {
+	if (!ensureProfile("Profile not set."))
+	{
+		return;
+	}
+
 	double savings = 0;
 	double averageChange = 0;
 
@@ -772,8 +834,19 @@ void forecastNegative(double savings, double averageChange)
 
 void chart()
 {
-	std::cout << "=== YEARLY FINANCIAL CHART ===";
-	newLine();
+	if (!ensureProfile("Profile not set."))
+	{
+		return;
+	}
+
+	if (totalMonths == 0)
+	{
+		std::cout << "No data.";
+		newLine();
+		return;
+	}
+
+	printChartHeader();
 
 	double minBalance = months[1].income - months[1].expense;
 	double maxBalance = minBalance;
@@ -796,6 +869,12 @@ void chart()
 
 	drawChartBody(minBalance, maxBalance, step);
 	printChartMonths();
+}
+
+void printChartHeader()
+{
+	std::cout << "=== YEARLY FINANCIAL CHART ===";
+	newLine();
 }
 
 int calculateChartStep(double maxValue)
@@ -998,4 +1077,32 @@ void printBalanceColored(double balance)
 	printDoubleFixed(balance);
 
 	std::cout << "\033[0m";
+}
+
+bool ensureProfile(const char* message)
+{
+	if (months == nullptr)
+	{
+		std::cout << message;
+		newLine();
+		return false;
+	}
+	return true;
+}
+double myRound(double value, int precision)
+{
+	double factor = 1.0;
+	for (int i = 0; i < precision; i++)
+	{ 
+		factor *= 10.0;
+	}
+
+	if (value >= 0)
+	{
+		return (long long)(value * factor + 0.5) / factor;
+	}
+	else
+	{
+		return (long long)(value * factor - 0.5) / factor;
+	}
 }
