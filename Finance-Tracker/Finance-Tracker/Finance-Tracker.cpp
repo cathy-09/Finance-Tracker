@@ -61,6 +61,7 @@ bool isArgumentMissing(const char* argument, const char* message);
 void setupProfile(FinanceProfile& financeProfile);
 bool isValidMonthCount(int months);
 void initializeMonths(MonthData* monthsArray, int monthsCount);
+bool requiresProfile(FinanceProfile& financeProfile, const char* commandWord);
 
 /* addData functionally */
 void addData(FinanceProfile& financeProfile);
@@ -123,6 +124,7 @@ void printBalanceColored(double balance);
 bool ensureProfile(FinanceProfile& financeProfile, const char* message);
 double myRound(double value, int precision);
 void printSpaces(int count);
+void toLowerCase(char* text);
 
 int main() {
 	const char* defaultMonthNames[MAX_MONTH_NAME] = {
@@ -154,6 +156,7 @@ int main() {
 		std::cin.getline(command, MAX_COMMAND_LENGTH);
 
 		char* commandWord = getCommandWord(command);
+		toLowerCase(commandWord);
 		char* argumentString = getArgumentFromCommand(command);
 
 		processCommand(financeProfile, commandWord, argumentString, exitProgram);
@@ -981,5 +984,15 @@ double myRound(double value, int precision) {
 void printSpaces(int count) {
 	for (int i = 0; i < count; i++) {
 		std::cout << ' ';
+	}
+}
+
+void toLowerCase(char* text) {
+	int charIndex = 0;
+	while (text[charIndex] != TERMINATE_SYMBOL) {
+		if (text[charIndex] >= 'A' && text[charIndex] <= 'Z') {
+			text[charIndex] = text[charIndex] - 'A' + 'a';
+		}
+		charIndex++;
 	}
 }
