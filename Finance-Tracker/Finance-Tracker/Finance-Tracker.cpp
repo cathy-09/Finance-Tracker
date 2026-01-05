@@ -15,6 +15,7 @@
 *
 */
 
+/* Constants */
 int const MAX_COMMAND_LENGTH = 30;
 int const MAX_K_LENGTH = 3;
 int const POINT_AND_TWO_SYMBOLS = 3;
@@ -32,15 +33,19 @@ const int CHART_LEVELS = 5;
 const int MIN_STEP = 1;
 const int SCALE_FACTOR = 10;
 
+/* MonthData Structure */
 struct MonthData
 {
 	double income;
 	double expense;
 };
+
+/* FinanceProfile Structure */
 struct FinanceProfile
 {
 	int totalMonths;
 	MonthData* months;
+	const char** monthNames;
 };
 
 /* main */
@@ -60,7 +65,7 @@ void addData(FinanceProfile& financeProfile);
 bool isValidMonthIndex(FinanceProfile& financeProfile, int month);
 void inputMonthData(FinanceProfile& financeProfile, int month);
 double calculateMonthBalance(FinanceProfile& financeProfile, int month);
-void printMonthResult(int month, double balance);
+void printMonthResult(FinanceProfile& financeProfile, int month, double balance);
 int countEnteredMonths(FinanceProfile& financeProfile);
 
 /* Align */
@@ -116,30 +121,21 @@ void printBalanceColored(double balance);
 bool ensureProfile(FinanceProfile& financeProfile, const char* message);
 double myRound(double value, int precision);
 
-const char* monthNames[MAX_MONTH_NAME] =
-{
-	"",
-	"January",
-	"February",
-	"March",
-	"April",
-	"May",
-	"June",
-	"July",
-	"August",
-	"September",
-	"October",
-	"November",
-	"December"
-};
-
 int main()
 {
+	const char* defaultMonthNames[MAX_MONTH_NAME] =
+	{
+		"",
+		"January", "February", "March", "April", "May", "June",
+		"July", "August", "September", "October", "November", "December"
+	};
 	FinanceProfile financeProfile;
 	financeProfile.months = nullptr;
 	financeProfile.totalMonths = 0;
+	financeProfile.monthNames = defaultMonthNames;
 	char command[MAX_COMMAND_LENGTH];
 	bool exitProgram = false;
+
 
 	while (!exitProgram)
 	{
@@ -371,7 +367,7 @@ void addData(FinanceProfile& financeProfile)
 	inputMonthData(financeProfile, month);
 
 	double balance = calculateMonthBalance(financeProfile, month);
-	printMonthResult(month, balance);
+	printMonthResult(financeProfile, month, balance);
 
 	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
@@ -393,9 +389,9 @@ double calculateMonthBalance(FinanceProfile& financeProfile, int month)
 {
 	return financeProfile.months[month].income - financeProfile.months[month].expense;
 }
-void printMonthResult(int month, double balance)
+void printMonthResult(FinanceProfile& financeProfile, int month, double balance)
 {
-	std::cout << "Result: Balance for " << monthNames[month] << ": ";
+	std::cout << "Result: Balance for " << financeProfile.monthNames[month] << ": ";
 	printBalanceColored(balance);
 	newLine();
 }
@@ -564,7 +560,7 @@ double printMonthReport(FinanceProfile& financeProfile, int monthIndex)
 {
 	double balance = financeProfile.months[monthIndex].income - financeProfile.months[monthIndex].expense;
 
-	printTextAligned(monthNames[monthIndex], COL_MONTH);
+	printTextAligned(financeProfile.monthNames[monthIndex], COL_MONTH);
 	std::cout << " | ";
 	printDoubleAligned(financeProfile.months[monthIndex].income, COL_INCOME);
 	std::cout << " | ";
@@ -631,7 +627,7 @@ int findMonthIndex(FinanceProfile& financeProfile, const char* monthName)
 {
 	for (int i = 1; i <= financeProfile.totalMonths; i++)
 	{
-		if (myStringCompare(monthName, monthNames[i]) == 0)
+		if (myStringCompare(monthName, financeProfile.monthNames[i]) == 0)
 		{
 			return i;
 		}
@@ -727,7 +723,7 @@ void printTopMonths(FinanceProfile& financeProfile, int* order, const char* type
 	for (int k = 1; k <= MAX_K_LENGTH && k <= financeProfile.totalMonths; k++)
 	{
 		int monthIndex = order[k];
-		std::cout << k << ". " << monthNames[monthIndex] << ": ";
+		std::cout << k << ". " << financeProfile.monthNames[monthIndex] << ": ";
 
 		double value = getMonthValue(financeProfile, monthIndex, type);
 
@@ -939,7 +935,10 @@ void printChartMonths(FinanceProfile& financeProfile)
 
 	for (int m = 1; m <= financeProfile.totalMonths; m++)
 	{
-		std::cout << monthNames[m][0] << monthNames[m][1] << monthNames[m][2] << " ";
+		std::cout << financeProfile.monthNames[m][0] 
+			<< financeProfile.monthNames[m][1] 
+			<< financeProfile.monthNames[m][2] 
+			<< " ";
 	}
 	newLine();
 }
