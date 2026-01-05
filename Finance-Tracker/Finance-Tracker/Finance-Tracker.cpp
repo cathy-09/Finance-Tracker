@@ -28,6 +28,9 @@ const int COL_INCOME = 12;
 const int COL_EXPENSE = 12;
 const int COL_BALANCE = 12;
 const int TOTAL_WIDTH = COL_MONTH + COL_INCOME + COL_EXPENSE + COL_BALANCE + 3 * 3 + 1;
+const int CHART_LEVELS = 5;
+const int MIN_STEP = 1;
+const int SCALE_FACTOR = 10;
 
 int totalMonths = 0;
 
@@ -86,8 +89,8 @@ void forecastNegative(double savings, double averageChange);
 
 /* chart functionally */
 void chart();
-int calculateChartStep(double maxValue);
-void drawChartBody(double minBalance, double maxBalance, int step);
+int calculateChartStep(double minBalance, double maxBalance);
+void drawChartBody(double minBalance, double maxBalance);
 void printChartMonths();
 void printChartHeader();
 
@@ -864,10 +867,9 @@ void chart()
 		}
 	}
 
-	double range = maxBalance - minBalance;
-	int step = calculateChartStep(range);
+	int step = calculateChartStep(minBalance, maxBalance);
 
-	drawChartBody(minBalance, maxBalance, step);
+	drawChartBody(minBalance, maxBalance);
 	printChartMonths();
 }
 
@@ -877,80 +879,52 @@ void printChartHeader()
 	newLine();
 }
 
-int calculateChartStep(double maxValue)
+int calculateChartStep(double minBalance, double maxBalance)
 {
-	if (maxValue <= 0)
+	double range = maxBalance - minBalance;
+
+	if (range <= 0)
 	{
-		return 100;
+		return MIN_STEP; 
 	}
 
-	int step = (int)(maxValue / 5.0);
+	double rawStep = range / CHART_LEVELS;
 
-	if (step == 0)
+	int scale = 1;
+	while (rawStep / scale > SCALE_FACTOR)
 	{
-		step = 1;
+		scale *= SCALE_FACTOR;
 	}
+
+	int step = (int)((rawStep + scale - 1) / scale) * scale;
 
 	return step;
 }
 
-void drawChartBody(double minBalance, double maxBalance, int step)
+void drawChartBody(double minBalance, double maxBalance)
 {
-	for (int level = 5; level >= 1; level--)
-	{
-		double value = minBalance + (level * step);
-		int printValue = (int)value;
-		int numDigits = 0;
-		int temp = printValue;
+	int step = calculateChartStep(minBalance, maxBalance);
 
-		if (temp == 0)
-		{
-			numDigits = 1;
-		}
-		else if (temp < 0)
-		{
-			numDigits = 1;
-			temp = -temp;
-			while (temp > 0)
-			{
-				numDigits++;
-				temp /= 10;
-			}
-		}
-		else
-		{
-			while (temp > 0)
-			{
-				numDigits++;
-				temp /= 10;
-			}
-		}
-		for (int i = numDigits; i < 5; i++)
-		{
-			std::cout << " ";
-		}
+	for (double level = maxBalance; level >= minBalance; level -= step)
+	{
+		int printValue = (int)level;
+		std::cout.width(5);
 		std::cout << printValue << " | ";
+
 		for (int m = 1; m <= totalMonths; m++)
 		{
 			double balance = months[m].income - months[m].expense;
-			if (balance >= value)
-			{
-				std::cout << "#";
-			}
+			if (balance >= level)
+				std::cout << "# ";
 			else
-			{
-				std::cout << " ";
-			}
-			std::cout << "   ";
+				std::cout << "  ";
 		}
 		newLine();
 	}
 
 	std::cout << "      ";
-	for (int i = 0; i < totalMonths * 4; i++)
-	{
-		std::cout << "-";
-	}
+	for (int m = 1; m <= totalMonths; m++)
+		std::cout << "--";
 	newLine();
 }
 
