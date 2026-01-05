@@ -32,27 +32,36 @@ const int CHART_LEVELS = 5;
 const int MIN_STEP = 1;
 const int SCALE_FACTOR = 10;
 
-int totalMonths = 0;
+struct MonthData
+{
+	double income;
+	double expense;
+};
+struct FinanceProfile
+{
+	int totalMonths;
+	MonthData* months;
+};
 
 /* main */
-void processCommand(char* commandWord, char* argumentString, bool& shouldExit);
-void handleForecastCommand(const char* argumentString);
-void handleSearchCommand(const char* argumentString);
-void handleSortCommand(const char* argumentString);
+void processCommand(FinanceProfile& financeProfile, char* commandWord, char* argumentString, bool& exitProgram);
+void handleForecastCommand(FinanceProfile& financeProfile, const char* argumentString);
+void handleSearchCommand(FinanceProfile& financeProfile, const char* argumentString);
+void handleSortCommand(FinanceProfile& financeProfile, const char* argumentString);
 int parseMonthsAhead(const char* argumentString);
 
 /* setupProfile functionally */
-void setupProfile();
+void setupProfile(FinanceProfile& financeProfile);
 bool isValidMonthCount(int months);
-void initializeMonths(struct MonthData* monthsArray, int monthsCount);
+void initializeMonths(MonthData* monthsArray, int monthsCount);
 
 /* addData functionally */
-void addData();
-bool isValidMonthIndex(int month);
-void inputMonthData(int month);
-double calculateMonthBalance(int month);
+void addData(FinanceProfile& financeProfile);
+bool isValidMonthIndex(FinanceProfile& financeProfile, int month);
+void inputMonthData(FinanceProfile& financeProfile, int month);
+double calculateMonthBalance(FinanceProfile& financeProfile, int month);
 void printMonthResult(int month, double balance);
-int countEnteredMonths();
+int countEnteredMonths(FinanceProfile& financeProfile);
 
 /* Align */
 void printTextAligned(const char* text, int width);
@@ -64,34 +73,34 @@ void printFraction(int fracPart);
 void splitDouble(double value, long long& intPart, int& fracPart);
 
 /* report functionally */
-void report();
+void report(FinanceProfile& financeProfile);
 void printReportHeader();
-double printMonthReport(int monthIndex);
-void printReportSummary(double totalIncome, double totalExpense);
+double printMonthReport(FinanceProfile& financeProfile, int monthIndex);
+void printReportSummary(FinanceProfile& financeProfile, double totalIncome, double totalExpense);
 
 /* searchMonth functionally */
-void searchMonth(const char* name);
-int findMonthIndex(const char* monthName);
-void printMonthDetails(int monthIndex);
+void searchMonth(FinanceProfile& financeProfile, const char* name);
+int findMonthIndex(FinanceProfile& financeProfile, const char* monthName);
+void printMonthDetails(FinanceProfile& financeProfile, int monthIndex);
 
 /* sortMonths functionally */
-void sortMonths(const char* type);
+void sortMonths(FinanceProfile& financeProfile, const char* type);
 bool isValidSortType(const char* type);
-void sortOrderByType(int* order, const char* type);
-void printTopMonths(int* order, const char* type);
-double getMonthValue(int monthIndex, const char* type);
+void sortOrderByType(FinanceProfile& financeProfile, int* order, const char* type);
+void printTopMonths(FinanceProfile& financeProfile, int* order, const char* type);
+double getMonthValue(FinanceProfile& financeProfile, int monthIndex, const char* type);
 
 /* forecast functionally */
-void forecast(int monthAhead);
-void calculateSavings(double& savings, double& averageChange);
+void forecast(FinanceProfile& financeProfile, int monthAhead);
+void calculateSavings(FinanceProfile& financeProfile, double& savings, double& averageChange);
 void forecastPositive(double savings, double averageChange, int monthsAhead);
-void forecastNegative(double savings, double averageChange);
+void forecastNegative(FinanceProfile& financeProfile, double savings, double averageChange);
 
 /* chart functionally */
-void chart();
+void chart(FinanceProfile& financeProfile);
 int calculateChartStep(double minBalance, double maxBalance);
-void drawChartBody(double minBalance, double maxBalance);
-void printChartMonths();
+void drawChartBody(FinanceProfile& financeProfile, double minBalance, double maxBalance);
+void printChartMonths(FinanceProfile& financeProfile);
 void printChartHeader();
 
 /* Utility functions */
@@ -104,15 +113,8 @@ char* getArgumentFromCommand(const char* fullCommand);
 char* getCommandWord(const char* fullCommand);
 void newLine();
 void printBalanceColored(double balance);
-bool ensureProfile(const char* message);
+bool ensureProfile(FinanceProfile& financeProfile, const char* message);
 double myRound(double value, int precision);
-
-struct MonthData
-{
-	double income;
-	double expense;
-};
-MonthData* months = nullptr;
 
 const char* monthNames[MAX_MONTH_NAME] =
 {
@@ -133,6 +135,9 @@ const char* monthNames[MAX_MONTH_NAME] =
 
 int main()
 {
+	FinanceProfile financeProfile;
+	financeProfile.months = nullptr;
+	financeProfile.totalMonths = 0;
 	char command[MAX_COMMAND_LENGTH];
 	bool exitProgram = false;
 
@@ -144,27 +149,27 @@ int main()
 		char* commandWord = getCommandWord(command);
 		char* argumentString = getArgumentFromCommand(command);
 
-		processCommand(commandWord, argumentString, exitProgram);
+		processCommand(financeProfile, commandWord, argumentString, exitProgram);
 
 		delete[] commandWord;
 		delete[] argumentString;
 	}
 
-	delete[] months;
+	delete[] financeProfile.months;
 }
 
-void processCommand(char* commandWord, char* argumentString, bool& exitProgram)
+void processCommand(FinanceProfile& financeProfile, char* commandWord, char* argumentString, bool& exitProgram)
 {
 	if (myStringCompare(commandWord, "setup") == 0)
 	{
-		setupProfile();
+		setupProfile(financeProfile);
 		return;
 	}
 	if (myStringCompare(commandWord, "exit") == 0)
 	{
-		if (months != nullptr)
+		if (financeProfile.months != nullptr)
 		{
-			report();
+			report(financeProfile);
 		}
 		exitProgram = true;
 		return;
@@ -178,7 +183,7 @@ void processCommand(char* commandWord, char* argumentString, bool& exitProgram)
 		myStringCompare(commandWord, "forecast") == 0 ||
 		myStringCompare(commandWord, "chart") == 0;
 
-	if (needsProfile && months == nullptr)
+	if (needsProfile && financeProfile.months == nullptr)
 	{
 		std::cout << "Profile not set. Do setup first.";
 		newLine();
@@ -187,31 +192,31 @@ void processCommand(char* commandWord, char* argumentString, bool& exitProgram)
 
 	if (myStringCompare(commandWord, "add") == 0)
 	{
-		addData();
+		addData(financeProfile);
 	}
 	else if (myStringCompare(commandWord, "report") == 0)
 	{
-		report();
+		report(financeProfile);
 	}
 	else if (myStringCompare(commandWord, "search") == 0)
 	{
-		handleSearchCommand(argumentString);
+		handleSearchCommand(financeProfile, argumentString);
 	}
 	else if (myStringCompare(commandWord, "sort") == 0)
 	{
-		handleSortCommand(argumentString);
+		handleSortCommand(financeProfile, argumentString);
 	}
 	else if (myStringCompare(commandWord, "forecast") == 0)
 	{
-		handleForecastCommand(argumentString);
+		handleForecastCommand(financeProfile, argumentString);
 	}
 	else if (myStringCompare(commandWord, "chart") == 0)
 	{
-		chart();
+		chart(financeProfile);
 	}
 	else if (myStringCompare(commandWord, "exit") == 0)
 	{
-		report();
+		report(financeProfile);
 		exitProgram = true;
 	}
 	else
@@ -235,7 +240,7 @@ int parseMonthsAhead(const char* argumentString)
 	return monthAhead;
 }
 
-void handleForecastCommand(const char* argumentString)
+void handleForecastCommand(FinanceProfile& financeProfile, const char* argumentString)
 {
 	if (argumentString[0] == TERMINATE_SYMBOL)
 	{
@@ -253,11 +258,11 @@ void handleForecastCommand(const char* argumentString)
 		}
 		else
 		{
-			forecast(monthAhead);
+			forecast(financeProfile, monthAhead);
 		}
 	}
 }
-void handleSearchCommand(const char* argumentString)
+void handleSearchCommand(FinanceProfile& financeProfile, const char* argumentString)
 {
 	if (argumentString[0] == TERMINATE_SYMBOL)
 	{
@@ -266,11 +271,11 @@ void handleSearchCommand(const char* argumentString)
 	}
 	else
 	{
-		searchMonth(argumentString);
+		searchMonth(financeProfile, argumentString);
 	}
 }
 
-void handleSortCommand(const char* argumentString)
+void handleSortCommand(FinanceProfile& financeProfile, const char* argumentString)
 {
 	if (argumentString[0] == TERMINATE_SYMBOL)
 	{
@@ -279,14 +284,14 @@ void handleSortCommand(const char* argumentString)
 	}
 	else
 	{
-		sortMonths(argumentString);
+		sortMonths(financeProfile, argumentString);
 	}
 }
 
-void setupProfile()
+void setupProfile(FinanceProfile& financeProfile)
 {
 	std::cout << "Enter number of months: ";
-	std::cin >> totalMonths;
+	std::cin >> financeProfile.totalMonths;
 
 	if (std::cin.fail())
 	{
@@ -294,22 +299,22 @@ void setupProfile()
 		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 		std::cout << "Invalid input. Enter a number.";
 		newLine();
-		totalMonths = 0;
+		financeProfile.totalMonths = 0;
 		return;
 	}
 
-	if (!isValidMonthCount(totalMonths))
+	if (!isValidMonthCount(financeProfile.totalMonths))
 	{
 		std::cout << "Invalid months!";
 		newLine();
-		totalMonths = 0;
+		financeProfile.totalMonths = 0;
 		return;
 	}
 
-	delete[] months;
-	months = new MonthData[totalMonths + 1];
+	delete[] financeProfile.months;
+	financeProfile.months = new MonthData[financeProfile.totalMonths + 1];
 
-	initializeMonths(months, totalMonths);
+	initializeMonths(financeProfile.months, financeProfile.totalMonths);
 
 	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 	std::cout << "Profile created successfully.";
@@ -330,12 +335,12 @@ bool isValidMonthCount(int months)
 	return months > 0 && months <= 12;
 }
 
-int countEnteredMonths()
+int countEnteredMonths(FinanceProfile& financeProfile)
 {
 	int count = 0;
-	for (int i = 1; i <= totalMonths; i++)
+	for (int i = 1; i <= financeProfile.totalMonths; i++)
 	{
-		if (months[i].income != 0 || months[i].expense != 0)
+		if (financeProfile.months[i].income != 0 || financeProfile.months[i].expense != 0)
 		{
 			count++;
 		}
@@ -343,19 +348,19 @@ int countEnteredMonths()
 	return count;
 }
 
-void addData()
+void addData(FinanceProfile& financeProfile)
 {
-	if (!ensureProfile("Profile not set."))
+	if (!ensureProfile(financeProfile, "Profile not set."))
 	{
 		return;
 	}
 
 	int month = 0;
 
-	std::cout << "Enter month (1-" << totalMonths << "): ";
+	std::cout << "Enter month (1-" << financeProfile.totalMonths << "): ";
 	std::cin >> month;
 
-	if (!isValidMonthIndex(month))
+	if (!isValidMonthIndex(financeProfile, month))
 	{
 		std::cout << "Invalid month!";
 		newLine();
@@ -363,30 +368,30 @@ void addData()
 		return;
 	}
 
-	inputMonthData(month);
+	inputMonthData(financeProfile, month);
 
-	double balance = calculateMonthBalance(month);
+	double balance = calculateMonthBalance(financeProfile, month);
 	printMonthResult(month, balance);
 
 	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
-bool isValidMonthIndex(int month)
+bool isValidMonthIndex(FinanceProfile& financeProfile, int month)
 {
-	return month >= 1 && month <= totalMonths;
+	return month >= 1 && month <= financeProfile.totalMonths;
 }
 
-void inputMonthData(int month)
+void inputMonthData(FinanceProfile& financeProfile, int month)
 {
 	std::cout << "Enter income: ";
-	std::cin >> months[month].income;
+	std::cin >> financeProfile.months[month].income;
 
 	std::cout << "Enter expense: ";
-	std::cin >> months[month].expense;
+	std::cin >> financeProfile.months[month].expense;
 }
-double calculateMonthBalance(int month)
+double calculateMonthBalance(FinanceProfile& financeProfile, int month)
 {
-	return months[month].income - months[month].expense;
+	return financeProfile.months[month].income - financeProfile.months[month].expense;
 }
 void printMonthResult(int month, double balance)
 {
@@ -395,9 +400,9 @@ void printMonthResult(int month, double balance)
 	newLine();
 }
 
-void report()
+void report(FinanceProfile& financeProfile)
 {
-	if (!ensureProfile("No profile to report."))
+	if (!ensureProfile(financeProfile, "No profile to report."))
 	{
 		return;
 	}
@@ -407,17 +412,17 @@ void report()
 
 	printReportHeader();
 
-	for (int i = 1; i <= totalMonths; i++)
+	for (int i = 1; i <= financeProfile.totalMonths; i++)
 	{
-		if (months[i].income != 0 || months[i].expense != 0)
+		if (financeProfile.months[i].income != 0 || financeProfile.months[i].expense != 0)
 		{
-			printMonthReport(i);
-			totalIncome += months[i].income;
-			totalExpense += months[i].expense;
+			printMonthReport(financeProfile, i);
+			totalIncome += financeProfile.months[i].income;
+			totalExpense += financeProfile.months[i].expense;
 		}
 	}
 
-	printReportSummary(totalIncome, totalExpense);
+	printReportSummary(financeProfile, totalIncome, totalExpense);
 }
 
 int countDigits(long long value)
@@ -555,15 +560,15 @@ void printReportHeader()
 	printHorizontalLine();
 }
 
-double printMonthReport(int monthIndex)
+double printMonthReport(FinanceProfile& financeProfile, int monthIndex)
 {
-	double balance = months[monthIndex].income - months[monthIndex].expense;
+	double balance = financeProfile.months[monthIndex].income - financeProfile.months[monthIndex].expense;
 
 	printTextAligned(monthNames[monthIndex], COL_MONTH);
 	std::cout << " | ";
-	printDoubleAligned(months[monthIndex].income, COL_INCOME);
+	printDoubleAligned(financeProfile.months[monthIndex].income, COL_INCOME);
 	std::cout << " | ";
-	printDoubleAligned(months[monthIndex].expense, COL_EXPENSE);
+	printDoubleAligned(financeProfile.months[monthIndex].expense, COL_EXPENSE);
 	std::cout << " | ";
 	printBalanceAligned(balance, COL_BALANCE);
 
@@ -571,11 +576,11 @@ double printMonthReport(int monthIndex)
 	return balance;
 }
 
-void printReportSummary(double totalIncome, double totalExpense)
+void printReportSummary(FinanceProfile& financeProfile, double totalIncome, double totalExpense)
 {
 	printHorizontalLine();
 
-	int enteredMonths = countEnteredMonths();
+	int enteredMonths = countEnteredMonths(financeProfile);
 
 	double average = 0;
 	if (enteredMonths > 0)
@@ -597,9 +602,9 @@ void printReportSummary(double totalIncome, double totalExpense)
 	newLine();
 }
 
-void searchMonth(const char* name)
+void searchMonth(FinanceProfile& financeProfile, const char* name)
 {
-	if (!ensureProfile("Profile not set."))
+	if (!ensureProfile(financeProfile, "Profile not set."))
 	{
 		return;
 	}
@@ -611,7 +616,7 @@ void searchMonth(const char* name)
 		return;
 	}
 
-	int index = findMonthIndex(name);
+	int index = findMonthIndex(financeProfile, name);
 
 	if (index == -1)
 	{
@@ -620,11 +625,11 @@ void searchMonth(const char* name)
 		return;
 	}
 
-	printMonthDetails(index);
+	printMonthDetails(financeProfile, index);
 }
-int findMonthIndex(const char* monthName)
+int findMonthIndex(FinanceProfile& financeProfile, const char* monthName)
 {
-	for (int i = 1; i <= totalMonths; i++)
+	for (int i = 1; i <= financeProfile.totalMonths; i++)
 	{
 		if (myStringCompare(monthName, monthNames[i]) == 0)
 		{
@@ -633,10 +638,10 @@ int findMonthIndex(const char* monthName)
 	}
 	return -1;
 }
-void printMonthDetails(int monthIndex)
+void printMonthDetails(FinanceProfile& financeProfile, int monthIndex)
 {
-	double income = months[monthIndex].income;
-	double expense = months[monthIndex].expense;
+	double income = financeProfile.months[monthIndex].income;
+	double expense = financeProfile.months[monthIndex].expense;
 	double balance = income - expense;
 
 	std::cout << "Income: " << income;
@@ -672,7 +677,7 @@ void mySwap(int& firstValue, int& secondValue)
 	firstValue = secondValue;
 	secondValue = tempValue;
 }
-void sortMonths(const char* type)
+void sortMonths(FinanceProfile& financeProfile, const char* type)
 {
 	if (!isValidSortType(type))
 	{
@@ -681,14 +686,14 @@ void sortMonths(const char* type)
 		return;
 	}
 
-	int* order = new int[totalMonths + 1];
-	for (int i = 1; i <= totalMonths; i++)
+	int* order = new int[financeProfile.totalMonths + 1];
+	for (int i = 1; i <= financeProfile.totalMonths; i++)
 	{
 		order[i] = i;
 	}
 
-	sortOrderByType(order, type);
-	printTopMonths(order, type);
+	sortOrderByType(financeProfile, order, type);
+	printTopMonths(financeProfile, order, type);
 
 	delete[] order;
 }
@@ -698,14 +703,14 @@ bool isValidSortType(const char* type)
 		myStringCompare(type, "expense") == 0 ||
 		myStringCompare(type, "balance") == 0;
 }
-void sortOrderByType(int* order, const char* type)
+void sortOrderByType(FinanceProfile& financeProfile, int* order, const char* type)
 {
-	for (int i = 1; i <= totalMonths; i++)
+	for (int i = 1; i <= financeProfile.totalMonths; i++)
 	{
-		for (int j = 1; j < totalMonths; j++)
+		for (int j = 1; j < financeProfile.totalMonths; j++)
 		{
-			double firstValue = getMonthValue(order[j], type);
-			double secondValue = getMonthValue(order[j + 1], type);
+			double firstValue = getMonthValue(financeProfile, order[j], type);
+			double secondValue = getMonthValue(financeProfile, order[j + 1], type);
 
 			if (firstValue < secondValue)
 			{
@@ -714,17 +719,17 @@ void sortOrderByType(int* order, const char* type)
 		}
 	}
 }
-void printTopMonths(int* order, const char* type)
+void printTopMonths(FinanceProfile& financeProfile, int* order, const char* type)
 {
 	std::cout << "Sorted by monthly " << type << " (descending):";
 	newLine();
 
-	for (int k = 1; k <= MAX_K_LENGTH && k <= totalMonths; k++)
+	for (int k = 1; k <= MAX_K_LENGTH && k <= financeProfile.totalMonths; k++)
 	{
 		int monthIndex = order[k];
 		std::cout << k << ". " << monthNames[monthIndex] << ": ";
 
-		double value = getMonthValue(monthIndex, type);
+		double value = getMonthValue(financeProfile, monthIndex, type);
 
 		if (myStringCompare(type, "expense") == 0)
 		{
@@ -740,26 +745,26 @@ void printTopMonths(int* order, const char* type)
 		newLine();
 	}
 }
-double getMonthValue(int monthIndex, const char* type)
+double getMonthValue(FinanceProfile& financeProfile, int monthIndex, const char* type)
 {
 	if (myStringCompare(type, "income") == 0)
 	{
-		return months[monthIndex].income;
+		return financeProfile.months[monthIndex].income;
 	}
 	else if (myStringCompare(type, "expense") == 0)
 	{
-		return months[monthIndex].expense;
+		return financeProfile.months[monthIndex].expense;
 	}
 	else if (myStringCompare(type, "balance") == 0)
 	{
-		return months[monthIndex].income - months[monthIndex].expense;
+		return financeProfile.months[monthIndex].income - financeProfile.months[monthIndex].expense;
 	}
 	return 0;
 }
 
-void forecast(int monthAhead)
+void forecast(FinanceProfile& financeProfile, int monthAhead)
 {
-	if (!ensureProfile("Profile not set."))
+	if (!ensureProfile(financeProfile, "Profile not set."))
 	{
 		return;
 	}
@@ -767,7 +772,7 @@ void forecast(int monthAhead)
 	double savings = 0;
 	double averageChange = 0;
 
-	calculateSavings(savings, averageChange);
+	calculateSavings(financeProfile, savings, averageChange);
 
 	std::cout << "Current savings: ";
 	printBalanceColored(savings);
@@ -783,23 +788,23 @@ void forecast(int monthAhead)
 	}
 	else
 	{
-		forecastNegative(savings, averageChange);
+		forecastNegative(financeProfile, savings, averageChange);
 	}
 }
-void calculateSavings(double& savings, double& averageChange)
+void calculateSavings(FinanceProfile& financeProfile, double& savings, double& averageChange)
 {
 	double totalIncome = 0;
 	double totalExpense = 0;
 
-	for (int i = 1; i <= totalMonths; i++)
+	for (int i = 1; i <= financeProfile.totalMonths; i++)
 	{
-		totalIncome += months[i].income;
-		totalExpense += months[i].expense;
+		totalIncome += financeProfile.months[i].income;
+		totalExpense += financeProfile.months[i].expense;
 	}
 
 	savings = totalIncome - totalExpense;
 
-	int enteredMonths = countEnteredMonths();
+	int enteredMonths = countEnteredMonths(financeProfile);
 
 	if (enteredMonths > 0)
 	{
@@ -819,13 +824,13 @@ void forecastPositive(double savings, double averageChange, int monthsAhead)
 	newLine();
 }
 
-void forecastNegative(double savings, double averageChange)
+void forecastNegative(FinanceProfile& financeProfile, double savings, double averageChange)
 {
 	double remainingSavings = savings;
 	int month = 0;
 
 	while (remainingSavings > 0 &&
-		month <= totalMonths * MAX_MONTHS_IN_YEAR)
+		month <= financeProfile.totalMonths * MAX_MONTHS_IN_YEAR)
 	{
 		remainingSavings += averageChange;
 		month++;
@@ -835,14 +840,14 @@ void forecastNegative(double savings, double averageChange)
 	newLine();
 }
 
-void chart()
+void chart(FinanceProfile& financeProfile)
 {
-	if (!ensureProfile("Profile not set."))
+	if (!ensureProfile(financeProfile, "Profile not set."))
 	{
 		return;
 	}
 
-	if (totalMonths == 0)
+	if (financeProfile.totalMonths == 0)
 	{
 		std::cout << "No data.";
 		newLine();
@@ -851,12 +856,12 @@ void chart()
 
 	printChartHeader();
 
-	double minBalance = months[1].income - months[1].expense;
+	double minBalance = financeProfile.months[1].income - financeProfile.months[1].expense;
 	double maxBalance = minBalance;
 
-	for (int i = 2; i <= totalMonths; i++)
+	for (int i = 2; i <= financeProfile.totalMonths; i++)
 	{
-		double balance = months[i].income - months[i].expense;
+		double balance = financeProfile.months[i].income - financeProfile.months[i].expense;
 		if (balance < minBalance)
 		{
 			minBalance = balance;
@@ -869,8 +874,8 @@ void chart()
 
 	int step = calculateChartStep(minBalance, maxBalance);
 
-	drawChartBody(minBalance, maxBalance);
-	printChartMonths();
+	drawChartBody(financeProfile, minBalance, maxBalance);
+	printChartMonths(financeProfile);
 }
 
 void printChartHeader()
@@ -901,7 +906,7 @@ int calculateChartStep(double minBalance, double maxBalance)
 	return step;
 }
 
-void drawChartBody(double minBalance, double maxBalance)
+void drawChartBody(FinanceProfile& financeProfile, double minBalance, double maxBalance)
 {
 	int step = calculateChartStep(minBalance, maxBalance);
 
@@ -911,9 +916,9 @@ void drawChartBody(double minBalance, double maxBalance)
 		std::cout.width(5);
 		std::cout << printValue << " | ";
 
-		for (int m = 1; m <= totalMonths; m++)
+		for (int m = 1; m <= financeProfile.totalMonths; m++)
 		{
-			double balance = months[m].income - months[m].expense;
+			double balance = financeProfile.months[m].income - financeProfile.months[m].expense;
 			if (balance >= level)
 				std::cout << "# ";
 			else
@@ -923,16 +928,16 @@ void drawChartBody(double minBalance, double maxBalance)
 	}
 
 	std::cout << "      ";
-	for (int m = 1; m <= totalMonths; m++)
+	for (int m = 1; m <= financeProfile.totalMonths; m++)
 		std::cout << "--";
 	newLine();
 }
 
-void printChartMonths()
+void printChartMonths(FinanceProfile& financeProfile)
 {
 	std::cout << "      ";
 
-	for (int m = 1; m <= totalMonths; m++)
+	for (int m = 1; m <= financeProfile.totalMonths; m++)
 	{
 		std::cout << monthNames[m][0] << monthNames[m][1] << monthNames[m][2] << " ";
 	}
@@ -1053,9 +1058,9 @@ void printBalanceColored(double balance)
 	std::cout << "\033[0m";
 }
 
-bool ensureProfile(const char* message)
+bool ensureProfile(FinanceProfile& financeProfile, const char* message)
 {
-	if (months == nullptr)
+	if (financeProfile.months == nullptr)
 	{
 		std::cout << message;
 		newLine();
