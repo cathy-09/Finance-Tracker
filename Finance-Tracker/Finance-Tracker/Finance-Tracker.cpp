@@ -58,6 +58,7 @@ void handleSortCommand(FinanceProfile& financeProfile, const char* argumentStrin
 int parseMonthsAhead(const char* argumentString);
 bool isArgumentMissing(const char* argument, const char* message);
 void printHelp();
+void welcome();
 
 /* setupProfile functionally */
 void setupProfile(FinanceProfile& financeProfile);
@@ -130,6 +131,7 @@ void printSpaces(int count);
 void toLowerCase(char* text);
 
 int main() {
+	welcome();
 	const char* defaultMonthNames[MAX_MONTH_NAME] = {
 		"",
 		"January",
@@ -153,8 +155,7 @@ int main() {
 
 	char command[MAX_COMMAND_LENGTH];
 	bool exitProgram = false;
-	printHelp();
-
+	
 	while (!exitProgram) {
 		std::cout << "> ";
 		std::cin.getline(command, MAX_COMMAND_LENGTH);
@@ -170,6 +171,17 @@ int main() {
 	}
 
 	delete[] financeProfile.months;
+}
+
+void welcome() {
+	std::cout << "=================================";
+	newLine();
+	std::cout << "   Welcome to Finance Profile!";
+	newLine();
+	std::cout << "=================================";
+	newLine();
+	std::cout << "Type 'help' to see commands list.";
+	newLine();
 }
 
 void printHelp() {
