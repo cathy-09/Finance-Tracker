@@ -57,6 +57,7 @@ void handleSearchCommand(FinanceProfile& financeProfile, const char* argumentStr
 void handleSortCommand(FinanceProfile& financeProfile, const char* argumentString);
 int parseMonthsAhead(const char* argumentString);
 bool isArgumentMissing(const char* argument, const char* message);
+void printHelp();
 
 /* setupProfile functionally */
 void setupProfile(FinanceProfile& financeProfile);
@@ -152,6 +153,7 @@ int main() {
 
 	char command[MAX_COMMAND_LENGTH];
 	bool exitProgram = false;
+	printHelp();
 
 	while (!exitProgram) {
 		std::cout << "> ";
@@ -168,6 +170,33 @@ int main() {
 	}
 
 	delete[] financeProfile.months;
+}
+
+void printHelp() {
+	std::cout << "Available Commands";
+	newLine();
+	std::cout << "-------------------------------------------------------------";
+	newLine();
+	std::cout << "> setup <month> - Create a new finance profile.";
+	newLine();
+	std::cout << "> add - Add income and expenses for a month.";
+	newLine();
+	std::cout << "> report - Show report for all months.";
+	newLine();
+	std::cout << "> search <month> - Show information for selected month.";
+	newLine();
+	std::cout << "> sort <type> - Sort by income, expense or balance.";
+	newLine();
+	std::cout << "> forecast <monthsAhead> - Financial forecast for m months.";
+	newLine();
+	std::cout << "> chart - Show graphical chart";
+	newLine();
+	std::cout << "> exit - Exit the program.";
+	newLine();
+	std::cout << "> help - Show list of commands.";
+	newLine();
+	std::cout << "-------------------------------------------------------------";
+	newLine();
 }
 
 void handleCommand(FinanceProfile& financeProfile, char* commandWord, char* argumentString, bool& exitProgram) {
@@ -204,6 +233,9 @@ void handleCommand(FinanceProfile& financeProfile, char* commandWord, char* argu
 	}
 	else if (myStringCompare(commandWord, "chart") == 0) {
 		chart(financeProfile);
+	}
+	else if (myStringCompare(commandWord, "help") == 0) {
+		printHelp();
 	}
 	else {
 		std::cout << "Invalid command.";
