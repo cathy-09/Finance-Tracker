@@ -35,6 +35,7 @@ const int SCALE_FACTOR = 10;
 const int FRACTION_TWO_DIGITS = 10;
 const int DECIMAL_BASE = 10;
 const int FRACTION_SCALE = 100;
+const double EPSILON = 0.01;
 
 /* MonthData Structure */
 struct MonthData {
@@ -760,9 +761,8 @@ void forecastPositive(double savings, double averageChange, int monthsAhead) {
 void forecastNegative(FinanceProfile& financeProfile, double savings, double averageChange) {
 	double remainingSavings = savings;
 	int month = 0;
-	double nextSavings = remainingSavings + averageChange;
 
-	while (myRound(nextSavings, 2) > 0 ) {
+	while (remainingSavings > EPSILON) {
 		remainingSavings += averageChange;
 		month++;
 	}
