@@ -70,6 +70,7 @@ void inputMonthData(FinanceProfile& financeProfile, int month);
 double calculateMonthBalance(FinanceProfile& financeProfile, int month);
 void printMonthResult(FinanceProfile& financeProfile, int month, double balance);
 int countEnteredMonths(FinanceProfile& financeProfile);
+bool isMonthAlreadyEntered(FinanceProfile& financeProfile, int month);
 
 /* Align */
 void printTextAligned(const char* text, int width);
@@ -337,6 +338,11 @@ int countEnteredMonths(FinanceProfile& financeProfile) {
 	return count;
 }
 
+bool isMonthAlreadyEntered(FinanceProfile& financeProfile, int month) {
+	return financeProfile.months[month].income != 0 ||
+		financeProfile.months[month].expense != 0;
+}
+
 void addData(FinanceProfile& financeProfile) {
 	if (!ensureProfile(financeProfile, "Profile not set.")) {
 		return;
@@ -349,6 +355,14 @@ void addData(FinanceProfile& financeProfile) {
 
 	if (!isValidMonthIndex(financeProfile, month)) {
 		std::cout << "Invalid month!";
+		newLine();
+
+		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		return;
+	}
+
+	if (isMonthAlreadyEntered(financeProfile, month)) {
+		std::cout << "Data for this month is already entered.";
 		newLine();
 
 		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -746,9 +760,9 @@ void forecastPositive(double savings, double averageChange, int monthsAhead) {
 void forecastNegative(FinanceProfile& financeProfile, double savings, double averageChange) {
 	double remainingSavings = savings;
 	int month = 0;
+	double nextSavings = remainingSavings + averageChange;
 
-	while (remainingSavings > 0 &&
-		month <= financeProfile.totalMonths * MAX_MONTHS_IN_YEAR) {
+	while (myRound(nextSavings, 2) > 0 ) {
 		remainingSavings += averageChange;
 		month++;
 	}
