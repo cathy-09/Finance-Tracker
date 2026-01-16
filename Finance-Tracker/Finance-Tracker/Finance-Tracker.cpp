@@ -50,7 +50,7 @@ struct FinanceProfile {
 };
 
 /* main */
-void processCommand(FinanceProfile& financeProfile, char* commandWord, char* argumentString, bool& exitProgram);
+void handleCommand(FinanceProfile& financeProfile, char* commandWord, char* argumentString, bool& exitProgram);
 void handleForecastCommand(FinanceProfile& financeProfile, const char* argumentString);
 void handleSearchCommand(FinanceProfile& financeProfile, const char* argumentString);
 void handleSortCommand(FinanceProfile& financeProfile, const char* argumentString);
@@ -159,7 +159,7 @@ int main() {
 		toLowerCase(commandWord);
 		char* argumentString = getArgumentFromCommand(command);
 
-		processCommand(financeProfile, commandWord, argumentString, exitProgram);
+		handleCommand(financeProfile, commandWord, argumentString, exitProgram);
 
 		delete[] commandWord;
 		delete[] argumentString;
@@ -168,7 +168,7 @@ int main() {
 	delete[] financeProfile.months;
 }
 
-void processCommand(FinanceProfile& financeProfile, char* commandWord, char* argumentString, bool& exitProgram) {
+void handleCommand(FinanceProfile& financeProfile, char* commandWord, char* argumentString, bool& exitProgram) {
 	if (myStringCompare(commandWord, "setup") == 0) {
 		setupProfile(financeProfile);
 		return;
@@ -202,10 +202,6 @@ void processCommand(FinanceProfile& financeProfile, char* commandWord, char* arg
 	}
 	else if (myStringCompare(commandWord, "chart") == 0) {
 		chart(financeProfile);
-	}
-	else if (myStringCompare(commandWord, "exit") == 0) {
-		report(financeProfile);
-		exitProgram = true;
 	}
 	else {
 		std::cout << "Invalid command.";
