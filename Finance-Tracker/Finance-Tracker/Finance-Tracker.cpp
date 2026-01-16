@@ -383,11 +383,19 @@ bool isValidMonthIndex(FinanceProfile& financeProfile, int month) {
 }
 
 void inputMonthData(FinanceProfile& financeProfile, int month) {
-	std::cout << "Enter income: ";
-	std::cin >> financeProfile.months[month].income;
+	do {
+		std::cout << "Enter income: ";
+		std::cin >> financeProfile.months[month].income;
 
-	std::cout << "Enter expense: ";
-	std::cin >> financeProfile.months[month].expense;
+		std::cout << "Enter expense: ";
+		std::cin >> financeProfile.months[month].expense;
+
+		if (financeProfile.months[month].income < 0
+			|| financeProfile.months[month].expense < 0) {
+			std::cout << "Income and expense must be positive or zero.";
+			newLine();
+		}
+	} while (financeProfile.months[month].income < 0 || financeProfile.months[month].expense < 0);
 }
 
 double calculateMonthBalance(FinanceProfile& financeProfile, int month) {
@@ -423,18 +431,18 @@ void report(FinanceProfile& financeProfile) {
 
 int countDigits(long long value)
 {
-	if (value == 0){
+	if (value == 0) {
 		return 1;
 	}
 
 	int count = 0;
 	long long temp = value;
 
-	if (temp < 0){
+	if (temp < 0) {
 		temp = -temp;
 	}
 
-	while (temp != 0){
+	while (temp != 0) {
 		count++;
 		temp /= DECIMAL_BASE;
 	}
@@ -855,7 +863,7 @@ void drawChartBody(FinanceProfile& financeProfile, double minBalance, double max
 	newLine();
 }
 
-void printChartMonths(FinanceProfile& financeProfile){
+void printChartMonths(FinanceProfile& financeProfile) {
 	std::cout << "      ";
 
 	for (int m = 1; m <= financeProfile.totalMonths; m++) {
