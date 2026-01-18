@@ -123,7 +123,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="add.cpp" />
+    <ClCompile Include="chart.cpp" />
+    <ClCompile Include="commands.cpp" />
     <ClCompile Include="Finance-Tracker.cpp" />
+    <ClCompile Include="forecast.cpp" />
+    <ClCompile Include="report.cpp" />
+    <ClCompile Include="search.cpp" />
+    <ClCompile Include="setup.cpp" />
+    <ClCompile Include="sort.cpp" />
+    <ClCompile Include="utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="add.h" />
+    <ClInclude Include="chart.h" />
+    <ClInclude Include="commands.h" />
+    <ClInclude Include="constants.h" />
+    <ClInclude Include="forecast.h" />
+    <ClInclude Include="report.h" />
+    <ClInclude Include="search.h" />
+    <ClInclude Include="setup.h" />
+    <ClInclude Include="sort.h" />
+    <ClInclude Include="structures.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
