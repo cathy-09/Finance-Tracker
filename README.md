@@ -33,6 +33,8 @@
 Type 'help' to see commands list.
 ```
 
+<hr style="border-width: 5px !important;">
+
 ### `help`
 **При избиране на командата 'help' се визуализира списък с команди:**
 ```
@@ -50,6 +52,9 @@ Available Commands
 > help - Show list of commands.
 -------------------------------------------------------------
 ```
+
+<hr style="border-width: 5px !important;">
+
 ### `setup <month>`
 Създава нов финансов профил. Потребителят избира за колко месеца ще се води симулацията. 
 ```
@@ -57,6 +62,9 @@ Available Commands
 Enter number of months: 12
 Profile created successfully.
 ```
+
+<hr style="border-width: 5px !important;">
+
 ### `add`
 Добавя данни за приходите и разходите на даден месец.
 ```
@@ -66,6 +74,9 @@ Enter income: 2200
 Enter expense: 1900
 Result: Balance for March: +300.00
 ```
+
+<hr style="border-width: 5px !important;">
+
 ### `report`
 Показва отчет за всички въведени месеци с общ приход, разход и баланс.
 ```
@@ -80,6 +91,9 @@ Total income: 7100.00
 Total expense: 4500.00
 Average balance: +866.67
 ```
+
+<hr style="border-width: 5px !important;">
+
 ### `search <month>`
 Показва детайлна информация за избран месец: приходи, разходи, баланс и процентен дял на разходите.
 ```
@@ -89,6 +103,9 @@ Expense: 1350
 Balance: +1050.00
 Expense ratio: 56.3%
 ```
+
+<hr style="border-width: 5px !important;">
+
 ### `sort <type>`
 Сортира месеците по избран критерий: **`income`**, **`expense`** или **`balance`**.
 След сортиране програмата показва **топ 3** месеца с най-висока стойност.
@@ -99,6 +116,9 @@ Sorted by monthly balance (descending):
 2. February: +1050.00
 3. March: +300.00
 ```
+
+<hr style="border-width: 5px !important;">
+
 ### `forecast <monthsAhead>`
 Прави прогноза на спестяванията или дълговете за зададен брой месеци напред.
 ```
@@ -107,6 +127,9 @@ Current savings: +2600.00
 Average monthly change: +866.67
 Predicted savings after 6 months: +7800.00
 ```
+
+<hr style="border-width: 5px !important;">
+
 ### `chart`
 Визуализира годишните приходи и разходи `(balance)` чрез бар диаграма. Всеки символ `#` представлява определена сума.
 ```
@@ -120,8 +143,14 @@ Predicted savings after 6 months: +7800.00
       ------------------------
       Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
 ```
+
+<hr style="border-width: 5px !important;">
+
 ### `exit`
 Излиза от програмата. При изход се извежда финален отчет.
+
+<hr style="border-width: 5px !important;">
+
 
 ## Архитектура на проекта
 ```cpp
