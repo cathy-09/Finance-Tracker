@@ -13,9 +13,7 @@
 
 ## Основни функционалности
 
-#### setup <months>
-
-| Команда&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Изход&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+| Команда&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Описание&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
 |-------------------------------------------------------------|-------------------------------------------------------------|
 | `help`                                                       | Показва `списък` с всички команди.                                                           |
 | `setup <months>`                                                       | Създава `нов финансов профил` за избран брой месеци.                                                           |
@@ -25,3 +23,32 @@
 | `forecast <monthsAhead>`                         | Прогнозира `спестяванията` или `дълговете` за зададен брой месеци напред.                                                          |
 | `chart`                                                       | Визуализира годишните приходи и разходи `(balance)` като бар диаграма.                                                           |
 | `exit`                                                       | Изход от програмата с финален отчет на въведените данни.                                                           |
+
+## Архитектура на проекта
+```cpp
+Finance-Tracker/
+├── Header Files/          # Декларации на функции и структури
+│   ├── add.h             
+│   ├── chart.h           
+│   ├── commands.h        
+│   ├── constants.h       # Константи
+│   ├── forecast.h        
+│   ├── report.h          
+│   ├── search.h          
+│   ├── setup.h           
+│   ├── sort.h            
+│   ├── structures.h      # Дефиниции на структури от данни
+│   └── utils.h           # Помощни функции
+│
+├── Source Files/         # Имплементация на функционалности
+│   ├── add.cpp
+│   ├── chart.cpp
+│   ├── commands.cpp
+│   ├── Finance-Tracker.cpp  # Главен файл (main)
+│   ├── forecast.cpp
+│   ├── report.cpp
+│   ├── search.cpp
+│   ├── setup.cpp
+│   ├── sort.cpp
+│   └── utils.cpp
+```
